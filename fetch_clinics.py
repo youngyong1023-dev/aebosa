@@ -85,6 +85,17 @@ def probe(name, key):
         print(f'{name} 확인 요청 실패({time.time() - t:.1f}초): {e}')
 
 
+def describe(name, items):
+    """항목 이름과, 값 종류가 적은 항목의 분포를 기록에 남긴다(공개 정보만, 진단용)."""
+    import collections
+    keys = sorted({k for it in items for k in it})
+    print(f'{name} 항목:', ', '.join(keys))
+    for k in keys:
+        c = collections.Counter(it.get(k, '') for it in items)
+        if 1 < len(c) <= 12:
+            print(f'  {k}:', dict(c.most_common()))
+
+
 def fetch_all(name, key):
     op, params = OPS[name]
     items, total = call(op, params, 1, key)
@@ -142,7 +153,10 @@ def main():
             rows[r['id']] = r
     moon_ok = True
     try:
-        for it in fetch_all('moon', key):
+        moon_items = fetch_all('moon', key)
+        describe('moon', moon_items)
+        describe('peds', got['peds'])
+        for it in moon_items:
             r = norm(it, 'h')
             if r and r['id']:
                 rows.setdefault(r['id'], r)['m'] = 1
