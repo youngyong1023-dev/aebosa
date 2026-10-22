@@ -290,6 +290,9 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 .drow .unit { font-size: var(--t17); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .drow .unit small { font-weight: 400; color: var(--muted); font-size: var(--t12); margin-left: 2px; }
 .dlink { display: grid; gap: 4px; color: inherit; text-decoration: none; }
+details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600; color: var(--muted); }
+.rvlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rvlist li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: var(--t13); font-variant-numeric: tabular-nums; }
 .dlink:hover b, .dlink:focus-visible b { text-decoration: underline; }
 
 /* 재생 시트: 그림자를 쓰는 유일한 부품 */
@@ -2047,6 +2050,22 @@ $('#cLocate').addEventListener('click', () => {
 // 지금 가격: 사람이 몰 상품 페이지에서 직접 확인해 deals_checked.json에 적은 값(build.py가 넣는다). 없으면 null.
 // 네이버 검색 API는 신규 신청이 막혀(2026-07-31, 보도 기준) 쓰지 않는다
 const DEALS = /*__DEALS__*/null;
+// 리뷰(reviews_checked.json): 판매처 평점은 판매처가 보여 준 값을 그대로 옮기고, 평가 요소별로 좋았다·아쉬웠다는 말을 사람이 읽고 센 건수를 둔다.
+// 리뷰를 센 판매처가 지금 카드의 최저가 판매처와 다르면 다시 셀 때까지 보여 주지 않는다(2026-10-23 결정)
+const REVIEWS = /*__REVIEWS__*/null;
+const ASPECTS = {
+  기저귀: [['샘', '안 새요', '샜어요'], ['피부', '발진 없어요', '발진·짓무름'], ['사이즈·밴드', '잘 맞아요', '안 맞거나 자국'], ['흡수', '보송해요', '축축해요'], ['두께·통기', '얇고 시원해요', '덥거나 땀띠']],
+  물티슈: [['두께', '도톰해요', '얇거나 찢어져요'], ['물기', '촉촉해요', '마르거나 흥건해요'], ['성분·향', '순해요', '향·따가움'], ['뽑기·캡', '한 장씩 나와요', '딸려 나와요'], ['보풀·잔여감', '보풀 없어요', '보풀·미끈거림']]
+};
+function reviewBlock(d, kind) {
+  const r = REVIEWS && (REVIEWS.items || []).find(x => x.title === d.title && x.mall === d.mall);
+  if (!r) return '';
+  const rows = (ASPECTS[kind] || []).filter(([k]) => r.aspects && r.aspects[k])
+    .map(([k, good, bad]) => `<li><span>${esc(k)}</span><span class="meta">${esc(good)} ${r.aspects[k][0]} · ${esc(bad)} ${r.aspects[k][1]}</span></li>`).join('');
+  return `<details class="more rv"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>${esc(r.mall)} 평점 ${esc(String(r.rating))} · 리뷰 ${won(r.ratingCount)}건</summary>
+    ${rows ? `<p class="hint">리뷰에서 나온 말 · ${esc(r.mall)} 최근 리뷰 ${won(r.read)}건을 읽고 셈 · ${esc(r.checkedAtText)} 확인</p><ul class="rvlist">${rows}</ul>` : ''}
+    <p class="hint">평점은 판매처가 보여 준 값을 그대로 옮겼습니다. 애보사가 매긴 점수가 아닙니다.</p></details>`;
+}
 const MALLS = [
   ['쿠팡', q => `https://www.coupang.com/np/search?q=${q}`],
   ['네이버쇼핑', q => `https://search.shopping.naver.com/search/all?query=${q}`],
@@ -2107,7 +2126,7 @@ function renderLive() {
       <span class="drow"><b>${esc(d.title)}</b><span class="unit">${u.toFixed(1)}원<small>/장</small></span></span>
       <span class="meta">${d.kg ? `권장 ${d.kg[0]}~${d.kg[1]}kg · ` : ''}${d.gsm ? `평량 ${d.gsm}gsm · ` : ''}${esc(d.size)} · ${esc(d.mall)} ${won(d.price)}원${d.ship ? ` + 배송비 ${won(d.ship)}원` : ' · 무료배송'}</span>
       ${best || hit ? `<span class="btnrow">${best ? '<span class="st mark">한 장당 가장 쌈</span>' : ''}${hit ? '<span class="st ok">목표가 이하</span>' : ''}</span>` : ''}
-      ${(d.feat || []).length ? `<span class="tags">${d.feat.map(k => `<i>${esc(featName(k))}</i>`).join('')}</span>` : ''}<span class="sr-only">(새 창)</span></a></li>`;
+      ${(d.feat || []).length ? `<span class="tags">${d.feat.map(k => `<i>${esc(featName(k))}</i>`).join('')}</span>` : ''}<span class="sr-only">(새 창)</span></a>${reviewBlock(d, g.kind)}</li>`;
   };
   const bestFirst = sortKey === 'unit';
   $('#dLive').innerHTML = (!all.length ? '<li class="empty2">고른 기능을 모두 갖춘 상품이 없어요. <button type="button" class="linkbtn" data-dfclear="1">기능 선택 지우기</button></li>'
@@ -2232,6 +2251,7 @@ function renderDeals() {
   $('#dNotes').innerHTML = [
     DEALS ? `'지금 가격'은 ${DEALS.checkedAtText}에 ${DEALS.source}에서 직접 확인한 값입니다. 몰에 지금 표시된 가격·쿠폰·배송비와 다를 수 있으니, 결제하기 전에 몰에서 확인하세요.` : "'지금 가격'은 사람이 몰 상품 페이지에서 직접 확인해 적습니다. 쇼핑몰 화면을 자동으로 모으지는 않습니다.",
     '한 장당 가격은 결제액(상품 가격 + 배송비)을 전체 매수로 나눈 값입니다. 매수는 판매 목록에 적힌 매수와 팩 수로 셌습니다.',
+    "상품 아래 '평점'은 그 상품의 최저가 판매처가 보여 준 평점과 리뷰 수를 그대로 옮긴 값입니다. '리뷰에서 나온 말'은 사람이 그 판매처의 최근 리뷰를 읽고 평가 요소별로 좋았다·아쉬웠다는 말을 센 건수입니다. 리뷰 한 건이 여러 요소를 말하면 요소마다 셉니다. 최저가 판매처가 바뀌면 다시 셀 때까지 보여 주지 않습니다.",
     ...(DEALS && DEALS.notes ? DEALS.notes : []),
     "'네이버 카페에서 최근 1일 핫딜 보기'는 네이버 카페 검색을 최신순·1일 조건으로 엽니다. 앱은 카페 글을 가져오거나 저장하지 않습니다. 이 샘플을 만든 환경에서는 네이버가 막혀 있어 이 조건이 그대로 적용되는지 열어 보지 못했습니다.",
     "'카페에서 본 가격 확인'은 적은 결제 금액을 전체 매수로 나눠, '지금 가격'에서 같은 품목의 한 장 가격 최저와 견줍니다. 기저귀는 성장 탭의 몸무게·성별에 맞는 상품이 있으면 그중 최저와 견줍니다.",

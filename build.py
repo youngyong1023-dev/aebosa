@@ -23,6 +23,10 @@ if who.exists():
 deals = here / 'deals_checked.json'  # 핫딜 '지금 가격'(몰 상품 페이지에서 직접 확인해 적은 값). 없으면 앱이 빈 안내를 보여 준다
 if deals.exists():
     body = body.replace('/*__DEALS__*/null', json.dumps(json.loads(deals.read_text(encoding='utf-8')), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
+# 핫딜 리뷰(판매처 평점 + 평가 요소별 언급 건수, 사람이 직접 읽고 센 값). 없으면 리뷰 칸을 그리지 않는다. 시험할 때만 REVIEWS_FILE로 다른 파일을 쓴다
+reviews = pathlib.Path(os.environ.get('REVIEWS_FILE') or here / 'reviews_checked.json')
+if reviews.exists():
+    body = body.replace('/*__REVIEWS__*/null', json.dumps(json.loads(reviews.read_text(encoding='utf-8')), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
 (here / 'app.html').write_text(body, encoding='utf-8')
 # 로컬 미리보기용 아이콘: 브랜드 로고 상징(정책 6절)과 같은 그림
 FAVICON = ('<link rel="icon" href="data:image/svg+xml,' + urllib.parse.quote(
