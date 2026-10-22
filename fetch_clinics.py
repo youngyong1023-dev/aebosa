@@ -41,14 +41,15 @@ def service_key():
     return urllib.parse.unquote(k) if '%' in k else k  # Encoding 키를 넣었으면 Decoding 키로 되돌린다(요청할 때 다시 인코딩한다)
 
 
-def call(op, params, page, key):
+def call(op, params, page, key, rows=ROWS, timeout=90, tries=3):
     """한 쪽을 받아 (항목 목록, 전체 건수)를 돌려준다. 오류 메시지에는 키를 넣지 않는다."""
-    url = f'{BASE}/{op}?' + urllib.parse.urlencode(dict(params, serviceKey=key, pageNo=page, numOfRows=ROWS))
+    url = f'{BASE}/{op}?' + urllib.parse.urlencode(dict(params, serviceKey=key, pageNo=page, numOfRows=rows))
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (aebosa clinic fetch)'})
     last = None
-    for attempt in range(3):
+    for attempt in range(tries):
         try:
             try:
-                with urllib.request.urlopen(url, timeout=30) as r:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
                     root = ET.fromstring(r.read())
             except urllib.error.HTTPError as e:  # 인증 오류는 401·403과 함께 XML로 이유를 보낸다
                 body = e.read()
@@ -70,6 +71,17 @@ def call(op, params, page, key):
             last = RuntimeError(str(e).replace(key, '***'))
             time.sleep(2 * (attempt + 1))
     raise last
+
+
+def probe(name, key):
+    """10건짜리 작은 요청으로 응답 시간과 전체 건수를 먼저 본다(막힘과 느림을 가린다)."""
+    op, params = OPS[name]
+    t = time.time()
+    try:
+        _, total = call(op, params, 1, key, rows=10, timeout=60, tries=1)
+        print(f'{name} 확인 요청: {time.time() - t:.1f}초, 전체 {total}건')
+    except Exception as e:
+        print(f'{name} 확인 요청 실패({time.time() - t:.1f}초): {e}')
 
 
 def fetch_all(name, key):
@@ -110,6 +122,8 @@ def main():
     key = service_key()
     rows = {}
     got = {}
+    for name in ('peds', 'pharm'):
+        probe(name, key)
     for name in ('peds', 'pharm'):  # 병·의원과 약국은 활용신청이 따로라, 하나가 막혀도 다른 하나의 상태를 함께 보여 준다
         try:
             got[name] = fetch_all(name, key)
