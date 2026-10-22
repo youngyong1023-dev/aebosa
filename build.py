@@ -27,9 +27,9 @@ if deals.exists():
 # 로컬 미리보기용 아이콘: 브랜드 로고 상징(정책 6절)과 같은 그림
 FAVICON = ('<link rel="icon" href="data:image/svg+xml,' + urllib.parse.quote(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1b2333"/>'
-    '<rect x="6.5" y="7.5" width="19" height="17" rx="3.5" fill="none" stroke="#fff" stroke-width="2.2"/>'
-    '<path d="M6.5 16h19M13.5 20.5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
-    '<rect x="11" y="10" width="10" height="3.8" rx="1" fill="#ffc83d"/></svg>') + '">\n')
+    '<g transform="translate(3.2 3.6) scale(.8)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">'
+    '<circle cx="11.5" cy="10.5" r="4.5"/><path d="M4 26.5a7.5 7.5 0 0 1 15 0M20 26.5a4.5 4.5 0 0 1 9 0"/>'
+    '<circle cx="24.5" cy="16.5" r="3.3" fill="#ffc83d" stroke="none"/></g></svg>') + '">\n')
 head = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
         + FAVICON)

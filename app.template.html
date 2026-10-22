@@ -1,11 +1,11 @@
-<title>육아 정리함</title>
+<title>애보사</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
 /* 레이아웃: 휴대폰 한 화면 크기의 앱 칸(휴대폰에서는 아래 탭 막대) + 넓은 화면에서는 오른쪽에 '샘플 안내' 칸. 흰 바탕 한 가지 화면만 쓴다.
-   브랜드 정책 v1.2(results/2026-10-23_육아정리함_브랜드정책.md)의 토큰. 색·글자 크기 값은 여기에만 쓴다(build.py가 검사). */
+   브랜드 정책 v1.3(results/2026-10-23_애보사_브랜드정책.md)의 토큰. 색·글자 크기 값은 여기에만 쓴다(build.py가 검사). */
 :root {
   --paper: #ffffff;
   --ink: #1b2333;
@@ -64,8 +64,10 @@ a { color: var(--link); }
 @media (min-width: 600px) { .bar { padding: 8px 16px; } }
 .brand { margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--f-display); font-weight: 700; font-size: var(--t20); line-height: 1.2; }
 .logo { width: 24px; height: 24px; flex: none; margin-right: 2px; }
-.logo .lg-box { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.logo .lg-label { fill: var(--label); stroke: var(--ink); stroke-width: 1.6; }
+.logo .lg-line { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.logo .lg-dot { fill: var(--label); stroke: var(--ink); stroke-width: 1.8; }
+.brand .word { display: flex; flex-direction: column; }
+.brand .word small { font-family: var(--f-body); font-size: var(--t12); font-weight: 500; line-height: 1.3; color: var(--muted); }
 .brand .tag { margin-left: 4px; font-family: var(--f-body); font-size: var(--t12); font-weight: 600; color: var(--muted); background: var(--soft); border-radius: 999px; padding: 2px 8px; }
 .profile { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; max-width: 50%; padding: 0 12px 0 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); font-size: var(--t13); font-weight: 600; white-space: nowrap; }
 .profile .pt { overflow: hidden; text-overflow: ellipsis; }
@@ -349,9 +351,9 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 </style>
 
 <main class="page">
-  <section class="app" id="app" aria-label="육아 정리함 샘플">
+  <section class="app" id="app" aria-label="애보사 샘플">
     <header class="bar">
-      <h1 class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect class="lg-box" x="4.5" y="6.5" width="23" height="21" rx="4"/><path class="lg-box" d="M4.5 17h23M13 22.5h6"/><rect class="lg-label" x="10.5" y="9.6" width="11" height="4.6" rx="1.2"/></svg><span class="word">육아 정리함</span><span class="tag">샘플</span></h1>
+      <h1 class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="lg-line" cx="11.5" cy="10.5" r="4.5"/><path class="lg-line" d="M4 26.5a7.5 7.5 0 0 1 15 0"/><circle class="lg-dot" cx="24.5" cy="16.5" r="3.3"/><path class="lg-line" d="M20 26.5a4.5 4.5 0 0 1 9 0"/></svg><span class="word">애보사<small>애 보는 사람들</small></span><span class="tag">샘플</span></h1>
       <button class="profile" id="btnProfile" type="button"></button>
     </header>
     <div class="examplebar" id="exampleBar" hidden>

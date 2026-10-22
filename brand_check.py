@@ -1,4 +1,4 @@
-"""브랜드 정책 검사(results/2026-10-23_육아정리함_브랜드정책.md 11절). build.py가 빌드 전에 부른다.
+"""브랜드 정책 검사(results/2026-10-23_애보사_브랜드정책.md 12절). build.py가 빌드 전에 부른다.
 
 1. 색 값과 사용자 정의 속성(--이름)은 :root 토큰 블록에만 쓴다. 색 속성과 SVG 칠(fill·stroke)에 이름 색(white 등)도 쓰지 않는다.
 2. 글꼴은 정책의 두 가지(Hahmlet, IBM Plex Sans KR)만 쓰고, font-family는 토큰으로만 지정한다.

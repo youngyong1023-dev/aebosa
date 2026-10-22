@@ -1,9 +1,9 @@
-# 육아 정리함 자체 주소 판: 앱 빌드 → 병원·약국 자료 받기 → GitHub Pages 배포
+# 애보사 자체 주소 판: 앱 빌드 → 병원·약국 자료 받기 → GitHub Pages 배포
 # 필요한 저장소 비밀 값(Settings → Secrets and variables → Actions):
 #   DATA_GO_KR_KEY  공공데이터포털 일반 인증키(Decoding) — 국립중앙의료원 병·의원 찾기·약국 정보 활용신청 후
 #   KAKAO_JS_KEY    카카오 개발자 앱의 JavaScript 키 — 카카오맵 사용 설정 ON, JavaScript SDK 도메인에 Pages 주소 등록 후
 # 키가 있는데 자료 받기가 실패하면 배포하지 않으므로 직전에 배포된 판이 그대로 남는다. 키가 없으면 자료 없이 배포한다.
-name: 육아 정리함 배포
+name: 애보사 배포
 on:
   push:
     branches: [main]
