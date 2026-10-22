@@ -17,6 +17,7 @@ import os
 import pathlib
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -37,7 +38,7 @@ def service_key():
     k = os.environ.get('DATA_GO_KR_KEY', '').strip() or (f.read_text(encoding='utf-8').strip() if f.exists() else '')
     if not k:
         sys.exit('공공데이터포털 인증키가 없습니다. DATA_GO_KR_KEY 환경 변수나 .keys/data_go_kr.txt에 일반 인증키(Decoding)를 넣어 주세요.')
-    return k
+    return urllib.parse.unquote(k) if '%' in k else k  # Encoding 키를 넣었으면 Decoding 키로 되돌린다(요청할 때 다시 인코딩한다)
 
 
 def call(op, params, page, key):
@@ -46,11 +47,20 @@ def call(op, params, page, key):
     last = None
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(url, timeout=30) as r:
-                root = ET.fromstring(r.read())
+            try:
+                with urllib.request.urlopen(url, timeout=30) as r:
+                    root = ET.fromstring(r.read())
+            except urllib.error.HTTPError as e:  # 인증 오류는 401·403과 함께 XML로 이유를 보낸다
+                body = e.read()
+                try:
+                    root = ET.fromstring(body)
+                except ET.ParseError:
+                    raise RuntimeError(f'HTTP {e.code}: {body[:200].decode("utf-8", "replace")}')
+                if not root.findtext('.//returnAuthMsg'):
+                    raise RuntimeError(f'HTTP {e.code}')
             auth = root.findtext('.//returnAuthMsg')  # 인증 오류 응답(OpenAPI_ServiceResponse)
             if auth:
-                raise RuntimeError(f'인증 오류: {auth} (코드 {root.findtext(".//returnReasonCode")})')
+                raise RuntimeError(f'인증 오류: {auth} / {root.findtext(".//errMsg")} (코드 {root.findtext(".//returnReasonCode")})')
             code = (root.findtext('.//resultCode') or '').strip()
             if code not in ('', '0', '00'):
                 raise RuntimeError(f'결과 코드 {code}: {root.findtext(".//resultMsg")}')
