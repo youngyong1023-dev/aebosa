@@ -114,6 +114,14 @@ def kind_of(it):
     return 'c' if d == '의원' else 'b' if d == '보건소' else 'h'
 
 
+def merge_hours(a, b):
+    """'HHMM-HHMM' 두 개를 이른 시작~늦은 마감으로 합친다. 한쪽이 비면 다른 쪽."""
+    if not a or not b:
+        return a or b
+    (s1, c1), (s2, c2) = a.split('-'), b.split('-')
+    return f'{min(s1, s2)}-{max(c1, c2)}'
+
+
 def norm(it, kind):
     try:
         y, x = float(it['wgs84Lat']), float(it['wgs84Lon'])
@@ -159,7 +167,10 @@ def main():
         for it in fetch_all('moon', key):  # 국립중앙의료원 '달빛어린이병원 및 소아전문센터 목록'
             r = norm(it, kind_of(it))
             if r and r['id']:
-                rows.setdefault(r['id'], r)['m'] = 1
+                old = rows.setdefault(r['id'], r)
+                if old is not r:  # 달빛 목록은 밤 진료 시간만 준다(평일 18시~). 일반 목록의 낮 시간과 합친다
+                    old['h'] = [merge_hours(a, b) for a, b in zip(old['h'], r['h'])]
+                old['m'] = 1
                 moon_ids.add(r['id'])
         for r in rows.values():  # 목록을 받았으면 진료 안내 글의 '달빛' 표시는 쓰지 않는다
             if r.get('m') and r['id'] not in moon_ids:
