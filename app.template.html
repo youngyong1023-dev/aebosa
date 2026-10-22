@@ -1946,8 +1946,9 @@ const distKm = (a, b) => { const r = Math.PI / 180, dy = (b.y - a.y) * r, dx = (
 const distText = km => (km < 1 ? `${Math.max(10, Math.round(km * 100) * 10)}m` : `${km.toFixed(1)}km`);
 // 길찾기만 카카오맵으로 넘긴다(이름, 위도, 경도 순서)
 const kakaoRoute = p => `https://map.kakao.com/link/to/${encodeURIComponent(p.n)},${p.y},${p.x}`;
-const NEAR_KINDS = { peds: ['소아청소년과', p => p.k === 'c' || p.k === 'h'], pharm: ['약국', p => p.k === 'p'], moon: ['달빛어린이병원', p => !!p.m] };
-const KIND_NAME = { c: '소아청소년과 의원', h: '병원(소아청소년과 진료)', p: '약국' };
+// [고르기 칩 이름, 문장에 쓰는 이름, 고르는 조건]. 소아청소년과 진료 = 진료과목에 소아청소년과가 있는 곳(내과·이비인후과 의원 포함)
+const NEAR_KINDS = { peds: ['소아청소년과 진료', '소아청소년과 진료 기관', p => p.k === 'c' || p.k === 'h' || p.k === 'b'], pharm: ['약국', '약국', p => p.k === 'p'], moon: ['달빛·소아전문', '달빛어린이병원·소아전문센터', p => !!p.m] };
+const kindName = p => p.k === 'c' ? (p.ps ? '소아청소년과 의원' : '의원(소아청소년과 진료)') : p.k === 'h' ? (p.ps ? '소아청소년과 병원' : '병원(소아청소년과 진료)') : p.k === 'b' ? '보건소' : p.k === 'p' ? '약국' : '';
 const near = { pos: null, places: [], kind: null, openOnly: true, map: null, marks: [], meta: null };
 // 내 위치가 든 0.1도 격자 칸과 둘레 8칸(약 9km 안)의 자료만 받는다. 위치는 서버로 보내지 않는다
 async function loadNear(pos) {
@@ -2000,7 +2001,7 @@ function focusNear(id) { const li = document.getElementById('np-' + id); if (li)
 // withMap: 종류·조건을 바꿨을 때만 지도를 다시 그린다(1분마다는 목록의 열림 상태만)
 function renderNearList(withMap) {
   if (!near.pos) return;
-  const now = new Date(), [label, want] = NEAR_KINDS[near.kind];
+  const now = new Date(), [, label, want] = NEAR_KINDS[near.kind];
   const hasMoon = near.places.some(p => p.m);
   $('#cKinds').innerHTML = Object.entries(NEAR_KINDS).filter(([k]) => k !== 'moon' || hasMoon)
     .map(([k, [n]]) => `<button type="button" class="chipbtn" data-ckind="${k}" aria-pressed="${near.kind === k}">${n}</button>`).join('') +
@@ -2008,12 +2009,12 @@ function renderNearList(withMap) {
   const all = near.places.filter(want).map(p => ({ p, d: distKm(near.pos, p), st: placeState(p, now) })).sort((a, b) => a.d - b.d);
   const rows = (near.openOnly ? all.filter(r => r.st.open) : all).slice(0, 20);
   $('#cNearList').innerHTML = rows.length ? rows.map((r, i) => `<li id="np-${esc(r.p.id)}" tabindex="-1"><div class="drow"><b>${i + 1}. ${esc(r.p.n)}</b><span class="unit">${distText(r.d)}</span></div>
-    <span class="meta"><span class="st ${r.st.key}">${esc(r.st.text)}</span>${esc(KIND_NAME[r.p.k] || '')}${r.p.m ? ' · 달빛어린이병원' : ''}</span>
+    <span class="meta"><span class="st ${r.st.key}">${esc(r.st.text)}</span>${esc(kindName(r.p))}${r.p.m ? ' · 달빛어린이병원·소아전문센터 목록' : ''}</span>
     ${r.p.a ? `<span class="meta">${esc(r.p.a)}</span>` : ''}
     <span class="acts">${r.p.t ? `<a href="tel:${esc(r.p.t.replace(/[^0-9+]/g, ''))}">${esc(r.p.t)}</a>` : '<span></span>'}<a class="chipbtn go" href="${esc(kakaoRoute(r.p))}" target="_blank" rel="noopener">길찾기${EXT}</a></span></li>`).join('')
     : `<li class="empty2">${all.length ? `가까운 ${label} ${all.length}곳 중 지금 연 곳이 없어요. '지금 열린 곳만'을 끄면 모두 볼 수 있어요.` : `가까운 ${label} 자료가 없어요. 아래 지도 앱·응급의료포털 링크로 찾아 주세요.`}</li>`;
   const m = near.meta;
-  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
+  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 소아청소년과 진료는 진료과목에 소아청소년과가 있는 곳이고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적습니다. 달빛어린이병원·소아전문센터는 국립중앙의료원 목록 기준입니다. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
   if (withMap) drawMap(rows);
 }
 $('#cLocate').addEventListener('click', () => {
@@ -2029,7 +2030,7 @@ $('#cLocate').addEventListener('click', () => {
       if (!near.kind) near.kind = isDaytime(new Date()) && !HOLIDAYS.has(isoOf(new Date())) ? 'peds' : near.places.some(x => x.m) ? 'moon' : 'pharm';
       $('#cNearUi').hidden = false;
       renderNearList(true);
-      say(`가까운 ${josa(NEAR_KINDS[near.kind][0], '을', '를')} 찾았어요.`);
+      say(`가까운 ${josa(NEAR_KINDS[near.kind][1], '을', '를')} 찾았어요.`);
     } finally { btn.disabled = false; label.textContent = '내 위치 다시 확인'; }
   }, err => {
     btn.disabled = false; label.textContent = '내 위치로 가까운 곳 보기';

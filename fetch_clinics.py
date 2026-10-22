@@ -6,9 +6,9 @@
 
 - 인증키: 환경 변수 DATA_GO_KR_KEY(공공데이터포털 '일반 인증키(Decoding)') 또는 .keys/data_go_kr.txt. 키 값은 출력하지 않는다.
 - 하루 호출 수: 쪽당 1,000건씩 소아청소년과·약국·달빛어린이병원을 모두 받아도 수십 번이라 개발 계정 한도(하루 1,000회) 안이다.
-- 확인 필요(키를 받은 뒤 첫 실행에서): 진료과목 D002 = 소아청소년과와 응답 필드 이름(dutyName·dutyTel1·dutyAddr·dutyDivNam·dutyInf·
-  dutyTime1s~8c·wgs84Lat·wgs84Lon·hpid)은 이용 사례 기준이다. 달빛어린이병원 목록 오퍼레이션 이름은 공공데이터포털 상세기능 목록에
-  있으나 이름은 명세서로 확인해야 해서, 받지 못하면 건너뛰고 dutyInf에 '달빛'이 적힌 곳만 표시한다.
+- 2026-10-23 첫 실행으로 확인: 진료과목 D002는 '진료과목에 소아청소년과가 있는 곳'이라 내과·이비인후과 의원과 요양병원·조산원 등도
+  함께 온다(15,167건). 요양병원 등은 빼고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적는다. 달빛 목록 오퍼레이션
+  getBabyListInfoInqire는 '달빛어린이병원 및 소아전문센터 목록'(156건)이며 둘을 가르는 항목은 없다.
 """
 import datetime
 import json
@@ -85,17 +85,6 @@ def probe(name, key):
         print(f'{name} 확인 요청 실패({time.time() - t:.1f}초): {e}')
 
 
-def describe(name, items):
-    """항목 이름과, 값 종류가 적은 항목의 분포를 기록에 남긴다(공개 정보만, 진단용)."""
-    import collections
-    keys = sorted({k for it in items for k in it})
-    print(f'{name} 항목:', ', '.join(keys))
-    for k in keys:
-        c = collections.Counter(it.get(k, '') for it in items)
-        if 1 < len(c) <= 12:
-            print(f'  {k}:', dict(c.most_common()))
-
-
 def fetch_all(name, key):
     op, params = OPS[name]
     items, total = call(op, params, 1, key)
@@ -116,6 +105,15 @@ def hours(it):
     return out
 
 
+# 진료과목 D002 조회에는 요양병원·조산원·한방병원 등도 섞여 온다(2026-10-23 실측). 아이가 아플 때 갈 곳이 아니라 뺀다
+EXCLUDE = {'요양병원', '조산원', '한방병원', '한의원', '치과병원', '치과의원', '기타(구급차)'}
+
+
+def kind_of(it):
+    d = it.get('dutyDivNam', '')
+    return 'c' if d == '의원' else 'b' if d == '보건소' else 'h'
+
+
 def norm(it, kind):
     try:
         y, x = float(it['wgs84Lat']), float(it['wgs84Lon'])
@@ -125,8 +123,10 @@ def norm(it, kind):
         return None
     row = {'id': it.get('hpid', ''), 'n': it.get('dutyName', ''), 'k': kind, 't': it.get('dutyTel1', ''),
            'a': it.get('dutyAddr', '')[:48], 'y': round(y, 6), 'x': round(x, 6), 'h': hours(it)}
+    if '소아' in row['n']:
+        row['ps'] = 1  # 이름에 소아(청소년)과가 들어간 곳만 '소아청소년과 의원'으로 적는다
     if '달빛' in it.get('dutyInf', ''):
-        row['m'] = 1
+        row['m'] = 1  # 달빛 목록을 못 받았을 때만 쓰는 대체 표시(아래에서 정리)
     return row
 
 
@@ -144,7 +144,9 @@ def main():
     if len(got) < 2:
         sys.exit('병·의원과 약국 목록을 모두 받아야 배포합니다. 받지 못한 API의 활용신청 승인 상태와 인증키를 확인해 주세요.')
     for it in got['peds']:
-        r = norm(it, 'c' if it.get('dutyDivNam', '') == '의원' else 'h')
+        if it.get('dutyDivNam', '') in EXCLUDE:
+            continue
+        r = norm(it, kind_of(it))
         if r and r['id']:
             rows[r['id']] = r
     for it in got['pharm']:
@@ -153,13 +155,15 @@ def main():
             rows[r['id']] = r
     moon_ok = True
     try:
-        moon_items = fetch_all('moon', key)
-        describe('moon', moon_items)
-        describe('peds', got['peds'])
-        for it in moon_items:
-            r = norm(it, 'h')
+        moon_ids = set()
+        for it in fetch_all('moon', key):  # 국립중앙의료원 '달빛어린이병원 및 소아전문센터 목록'
+            r = norm(it, kind_of(it))
             if r and r['id']:
                 rows.setdefault(r['id'], r)['m'] = 1
+                moon_ids.add(r['id'])
+        for r in rows.values():  # 목록을 받았으면 진료 안내 글의 '달빛' 표시는 쓰지 않는다
+            if r.get('m') and r['id'] not in moon_ids:
+                del r['m']
     except Exception as e:  # 오퍼레이션 이름이 다르면 여기서 건너뛴다
         moon_ok = False
         print('달빛어린이병원 목록을 받지 못했습니다:', e)
@@ -174,13 +178,15 @@ def main():
     for k, v in cells.items():
         (OUT / f'{k}.json').write_text(json.dumps(v, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-    counts = {k: sum(r['k'] == k for r in rows.values()) for k in ('c', 'h', 'p')}
+    counts = {k: sum(r['k'] == k for r in rows.values()) for k in ('c', 'h', 'b', 'p')}
     counts['m'] = sum(bool(r.get('m')) for r in rows.values())
+    counts['ps'] = sum(bool(r.get('ps')) for r in rows.values())
     meta = {'updatedAt': now.isoformat(timespec='minutes'), 'updatedText': f'{now.month}월 {now.day}일 {now:%H:%M}',
             'source': '국립중앙의료원 전국 병·의원 찾기 서비스·전국 약국 정보 조회 서비스(공공데이터포털)',
             'cell': 0.1, 'cells': len(cells), 'counts': counts, 'moonList': moon_ok}
     (OUT / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False), encoding='utf-8')
-    print(f'칸 {len(cells)}개 · 소아청소년과 의원 {counts["c"]} · 병원 {counts["h"]} · 약국 {counts["p"]} · 달빛 {counts["m"]}')
+    print(f'칸 {len(cells)}개 · 소아청소년과 진료 의원 {counts["c"]} · 병원 {counts["h"]} · 보건소 {counts["b"]} · 이름에 소아 {counts["ps"]}'
+          f' · 약국 {counts["p"]} · 달빛어린이병원·소아전문센터 {counts["m"]}')
 
 
 if __name__ == '__main__':
