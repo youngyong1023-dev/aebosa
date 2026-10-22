@@ -109,11 +109,19 @@ def norm(it, kind):
 def main():
     key = service_key()
     rows = {}
-    for it in fetch_all('peds', key):
+    got = {}
+    for name in ('peds', 'pharm'):  # 병·의원과 약국은 활용신청이 따로라, 하나가 막혀도 다른 하나의 상태를 함께 보여 준다
+        try:
+            got[name] = fetch_all(name, key)
+        except Exception as e:
+            print(f'{name}: 받지 못했습니다 — {e}')
+    if len(got) < 2:
+        sys.exit('병·의원과 약국 목록을 모두 받아야 배포합니다. 받지 못한 API의 활용신청 승인 상태와 인증키를 확인해 주세요.')
+    for it in got['peds']:
         r = norm(it, 'c' if it.get('dutyDivNam', '') == '의원' else 'h')
         if r and r['id']:
             rows[r['id']] = r
-    for it in fetch_all('pharm', key):
+    for it in got['pharm']:
         r = norm(it, 'p')
         if r and r['id']:
             rows[r['id']] = r
