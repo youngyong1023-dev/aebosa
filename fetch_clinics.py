@@ -38,6 +38,7 @@ def service_key():
     k = os.environ.get('DATA_GO_KR_KEY', '').strip() or (f.read_text(encoding='utf-8').strip() if f.exists() else '')
     if not k:
         sys.exit('공공데이터포털 인증키가 없습니다. DATA_GO_KR_KEY 환경 변수나 .keys/data_go_kr.txt에 일반 인증키(Decoding)를 넣어 주세요.')
+    print(f"인증키 형식: {len(k)}자, {'Encoding' if '%' in k else 'Decoding'} 형식")  # 값은 출력하지 않는다
     return urllib.parse.unquote(k) if '%' in k else k  # Encoding 키를 넣었으면 Decoding 키로 되돌린다(요청할 때 다시 인코딩한다)
 
 

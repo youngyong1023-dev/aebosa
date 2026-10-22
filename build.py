@@ -49,4 +49,4 @@ site_doc = full_doc(body.replace('/*__SITE__*/null', json.dumps(site_cfg, ensure
 (here / 'site').mkdir(exist_ok=True)
 (here / 'site' / 'index.html').write_text(site_doc, encoding='utf-8')
 print('app.html', len(body.encode()), 'bytes · index.html', len(doc.encode()), 'bytes · 영상', len(slim),
-      '· site/index.html(카카오맵 키', '있음)' if map_key else '없음)')
+      '· site/index.html(카카오맵 키', f'있음, {len(map_key)}자 — JavaScript 키는 32자)' if map_key else '없음)')
