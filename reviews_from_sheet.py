@@ -34,6 +34,7 @@ def main():
     wb = load_workbook(sys.argv[1], data_only=True)
     deals = json.loads((HERE / 'deals_checked.json').read_text(encoding='utf-8'))
     now = {(d['title'], d['mall']) for g in deals['groups'] for d in (g.get('items') or g.get('rows'))}
+    price_day = datetime.date.fromisoformat(deals['checkedAt'][:10])  # '지금 가격'을 다시 확인할 때마다 리뷰도 다시 센다(2026-10-23 결정)
     items, errors, warns, empty = [], [], [], 0
     for kind, asp in ASPECTS.items():
         if kind not in wb.sheetnames:
@@ -76,6 +77,8 @@ def main():
             if bad:
                 errors.append(f'{where}: ' + ', '.join(bad))
                 continue
+            if d < price_day:
+                warns.append(f"{where}: '지금 가격' 확인({deals['checkedAtText']})보다 먼저 센 리뷰라 앱에서는 보이지 않습니다")
             if (title, mall) not in now:
                 warns.append(f'{where}: 지금 가격의 최저가 판매처와 달라 앱에서는 보이지 않습니다')
             items.append({'title': title, 'mall': mall, 'kind': kind, 'checkedAt': d.isoformat(),
