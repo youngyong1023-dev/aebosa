@@ -1,0 +1,52 @@
+# 육아 정리함 자체 주소 판: 앱 빌드 → 병원·약국 자료 받기 → GitHub Pages 배포
+# 필요한 저장소 비밀 값(Settings → Secrets and variables → Actions):
+#   DATA_GO_KR_KEY  공공데이터포털 일반 인증키(Decoding) — 국립중앙의료원 병·의원 찾기·약국 정보 활용신청 후
+#   KAKAO_JS_KEY    카카오 개발자 앱의 JavaScript 키 — 카카오맵 사용 설정 ON, JavaScript SDK 도메인에 Pages 주소 등록 후
+# 키가 있는데 자료 받기가 실패하면 배포하지 않으므로 직전에 배포된 판이 그대로 남는다. 키가 없으면 자료 없이 배포한다.
+name: 육아 정리함 배포
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 18 * * *'   # 매일 03:00(한국 시간)에 병원·약국 자료를 다시 받는다
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 앱 빌드(브랜드 정책 검사 포함)
+        env:
+          KAKAO_JS_KEY: ${{ secrets.KAKAO_JS_KEY }}
+        run: python3 -I -B build.py
+      - name: 병원·약국 자료 받기(키가 없으면 건너뛰고 자료 없이 배포)
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: |
+          if [ -n "$DATA_GO_KR_KEY" ]; then
+            python3 -I -B fetch_clinics.py
+          else
+            echo "::warning::DATA_GO_KR_KEY가 없어 병원·약국 자료 없이 배포합니다"
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
