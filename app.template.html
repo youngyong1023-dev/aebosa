@@ -265,6 +265,7 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 .plist .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 .notes { margin: 0; padding-left: 16px; display: grid; gap: 4px; font-size: var(--t12); color: var(--muted); }
 .empty2 { margin: 0; font-size: var(--t13); color: var(--muted); }
+.plist > li.grp { display: block; border-bottom: 0; padding: 4px 0 0; font-size: var(--t12); font-weight: 600; color: var(--muted); }
 .memo { white-space: pre-wrap; font-family: var(--f-body); font-size: var(--t13); background: var(--soft); border-radius: 12px; padding: 12px 16px; margin: 0; overflow-wrap: anywhere; }
 
 /* 표 · 그래프 */
@@ -2007,14 +2008,18 @@ function renderNearList(withMap) {
     .map(([k, [n]]) => `<button type="button" class="chipbtn" data-ckind="${k}" aria-pressed="${near.kind === k}">${n}</button>`).join('') +
     `<button type="button" class="chipbtn" data-copen="1" data-multi aria-pressed="${near.openOnly}">지금 열린 곳만</button>`;
   const all = near.places.filter(want).map(p => ({ p, d: distKm(near.pos, p), st: placeState(p, now) })).sort((a, b) => a.d - b.d);
+  // 소아청소년과 진료: 이름에 '소아'가 들어간 곳을 가까운 순으로 먼저, 진료과목에만 소아청소년과가 있는 곳은 그 아래(2026-10-23 결정)
+  if (near.kind === 'peds') all.sort((a, b) => (b.p.ps ? 1 : 0) - (a.p.ps ? 1 : 0));
   const rows = (near.openOnly ? all.filter(r => r.st.open) : all).slice(0, 20);
-  $('#cNearList').innerHTML = rows.length ? rows.map((r, i) => `<li id="np-${esc(r.p.id)}" tabindex="-1"><div class="drow"><b>${i + 1}. ${esc(r.p.n)}</b><span class="unit">${distText(r.d)}</span></div>
+  const grp = (r, i) => near.kind !== 'peds' || (i > 0 && !!rows[i - 1].p.ps === !!r.p.ps) ? ''
+    : `<li class="grp" aria-hidden="true">${r.p.ps ? "이름에 '소아'가 들어간 소아청소년과" : '진료과목에 소아청소년과가 있는 곳'}</li>`;
+  $('#cNearList').innerHTML = rows.length ? rows.map((r, i) => `${grp(r, i)}<li id="np-${esc(r.p.id)}" tabindex="-1"><div class="drow"><b>${i + 1}. ${esc(r.p.n)}</b><span class="unit">${distText(r.d)}</span></div>
     <span class="meta"><span class="st ${r.st.key}">${esc(r.st.text)}</span>${esc(kindName(r.p))}${r.p.m ? ' · 달빛어린이병원·소아전문센터 목록' : ''}</span>
     ${r.p.a ? `<span class="meta">${esc(r.p.a)}</span>` : ''}
     <span class="acts">${r.p.t ? `<a href="tel:${esc(r.p.t.replace(/[^0-9+]/g, ''))}">${esc(r.p.t)}</a>` : '<span></span>'}<a class="chipbtn go" href="${esc(kakaoRoute(r.p))}" target="_blank" rel="noopener">길찾기${EXT}</a></span></li>`).join('')
     : `<li class="empty2">${all.length ? `가까운 ${label} ${all.length}곳 중 지금 연 곳이 없어요. '지금 열린 곳만'을 끄면 모두 볼 수 있어요.` : `가까운 ${label} 자료가 없어요. 아래 지도 앱·응급의료포털 링크로 찾아 주세요.`}</li>`;
   const m = near.meta;
-  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 소아청소년과 진료는 진료과목에 소아청소년과가 있는 곳이고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적습니다. 달빛어린이병원·소아전문센터는 국립중앙의료원 목록 기준입니다. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
+  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 소아청소년과 진료는 진료과목에 소아청소년과가 있는 곳이고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적고 먼저 보여 줍니다. 달빛어린이병원·소아전문센터는 국립중앙의료원 목록 기준입니다. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
   if (withMap) drawMap(rows);
 }
 $('#cLocate').addEventListener('click', () => {
