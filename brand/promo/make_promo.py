@@ -35,7 +35,7 @@ SCENES = [
     ('s4', 5.0, '성장 탭에 키와 몸무게를 적으면, 또래 아이들 사이에서 어디쯤인지 한눈에 보여요.'),
     ('s5', 5.5, '병원과 약국은 지금 갈 수 있는 곳부터 찾아요. 위치는 버튼을 누를 때만 쓰고, 어디에도 저장하거나 보내지 않아요.'),
     ('s6', 5.5, '기저귀와 물티슈는 한 장당 가격이 싼 순서로 보여요. 언제 확인했는지, 어디서 파는지도 같이 적어 두고요.'),
-    ('s7', 6.0, '애보사의 약속이에요. 짧게 보여 주고, 근거를 함께 적고, 판정은 하지 않고, 아이 정보는 적게 받아요.'),
+    ('s7', 6.0, '애보사의 약속이에요. 짧게 끝나고, 출처를 같이 보여 드리고, 좋다 나쁘다 정하지 않고, 아이 정보는 필요한 만큼만 받아요.'),
     ('s8', 4.5, '애보사. 휴대폰 브라우저에서 바로 열려요.'),
 ]
 LEAD, TAIL = 0.5, 0.7
@@ -265,9 +265,9 @@ html,body{{margin:0;background:var(--paper)}}
         's3': cap('영상', '지금 어떤 때인가요?', [('', '밥 준비할 때 · 차를 탔을 때 · 병원·식당에서 기다릴 때'), ('m', '몇 편 볼까요? 다 봤을 때 알려 드려요.')]) + phone('video.png', pan),
         's4': cap('성장', '우리 아이 성장', [('', '키와 몸무게를 적으면 같은 나이 아이들과 비교해 보여 드려요.')]) + phone('growth.png', pan),
         's5': cap('병원·약국', '지금 갈 수 있는 곳', [('', '위치는 버튼을 누를 때만 씁니다.'), ('m', '저장하거나 보내지 않습니다.')]) + phone('clinic.png', pan),
-        's6': cap('핫딜', '기저귀·물티슈 핫딜', [('', '한 장당 가격이 싼 순서로'), ('m', '확인한 시각과 출처를 함께 적습니다.')]) + phone('deals.png', pan),
+        's6': cap('핫딜', '기저귀·물티슈 핫딜', [('', '한 장당 가격이 싼 순서로'), ('m', '언제 어디서 확인했는지도 같이 적어 둬요.')]) + phone('deals.png', pan),
         's7': ('<div class="center"><h2 class="cap-h" data-in="0.1" style="font-family:var(--f-display);font-weight:400;font-size:' + ('76' if v else '68') + 'px;margin:0;-webkit-text-stroke:0.5px currentColor">애보사의 약속</h2><div class="promise">'
-               + ''.join(f'<div data-in="{0.9 + i * 0.95:.2f}"><span>✓</span>{t}</div>' for i, t in enumerate(['짧게', '근거를 보인다', '판정하지 않는다', '아이 정보는 적게'])) + '</div></div>'),
+               + ''.join(f'<div data-in="{0.9 + i * 0.95:.2f}"><span>✓</span>{t}</div>' for i, t in enumerate(['짧게 끝나요', '출처를 같이 보여 드려요', '좋다 나쁘다 정하지 않아요', '아이 정보는 필요한 만큼만'])) + '</div></div>'),
         's8': f'<div class="center"><div data-in="0.1">{lockup(176 if v else 140)}</div><p class="url" data-in="0.7">{SITE}</p><p class="note" data-in="1.1">휴대폰 브라우저에서 바로 열립니다.</p><p class="note" data-in="1.4">지금은 샘플로 열려 있습니다.</p></div>',
     }
     body = ''.join(f'<section class="scene" id="{sid}">{scenes[sid]}</section>' for sid, _, _ in SCENES)
