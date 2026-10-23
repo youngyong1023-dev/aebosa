@@ -5,7 +5,9 @@
 
 사용: python3 brand/promo/make_promo.py shots | audio | preview | render 9x16 | render 16x9
   shots    앱 화면 캡처 → shots/ (서버가 켜져 있어야 한다: python3 -m http.server 8765 --bind 127.0.0.1)
-  audio    내레이션 → _audio/, 장면 길이표 timeline.json, 자막 aebosa_promo.srt
+  audio    소리 트랙(_audio/track.wav)과 장면 길이표 timeline.json. 내레이션 모드면 자막 aebosa_promo.srt도 만든다
+  music    음악 베드 미리 듣기: python3 make_promo.py music "Summers End" → _audio/music_<묶음>.mp3
+           소리 모드는 환경 변수 AEBOSA_TTS: 'none'(기본, 음악만) · 'supertonic:F1' · 'say'. 음악 묶음은 AEBOSA_MUSIC(기본 'Soft Waves')
   preview  장면별 대표 프레임 PNG → _preview/ (검수용)
   render   전체 프레임 → mp4 (aebosa_promo_9x16.mp4 / aebosa_promo_16x9.mp4)
 """
@@ -38,7 +40,36 @@ SCENES = [
 ]
 LEAD, TAIL = 0.5, 0.7
 # 내레이션 엔진: 'supertonic:<음성이름>'(F1~F5·M1~M5, 기본) 또는 'say'(맥 내장 유나). 환경 변수 AEBOSA_TTS로 바꾼다
-TTS_ENGINE = os.environ.get('AEBOSA_TTS', 'supertonic:F1')
+TTS_ENGINE = os.environ.get('AEBOSA_TTS', 'none')
+# 음악: 맥의 GarageBand에 든 Apple Loops(한 묶음 안의 악기 루프는 같은 템포·조성)를 이어 붙여 베드를 만든다.
+# 애플 약관상 루프로 만든 사운드트랙은 영상에 써서 배포할 수 있고, 루프 파일 자체를 따로 나눠 주지만 않으면 된다
+LOOPS = pathlib.Path('/Library/Audio/Apple Loops/Apple/07 Chillwave')
+MUSIC_KIT = os.environ.get('AEBOSA_MUSIC', 'Soft Waves')
+MUSIC_LEVEL = [('Beat', 0.45), ('Lead', 0.5), ('Pad', 0.55), ('Synth', 0.55), ('Bass', 0.7), ('Guitar', 1.0), ('Layers', 0.8)]
+# 내레이션이 없을 때 장면 길이(초): 자막을 읽을 시간 기준
+SILENT_DUR = {'s1': 4.5, 's2': 5.5, 's3': 7.5, 's4': 6.0, 's5': 6.5, 's6': 6.5, 's7': 7.5, 's8': 5.0}
+
+
+def music_bed(kit, total, out):
+    """한 묶음의 루프를 전부 겹쳐 total초 베드를 만든다(처음 1.5초 페이드인, 끝 3초 페이드아웃, -18 LUFS)."""
+    files = sorted(LOOPS.glob(f'{kit}*.caf'))
+    if not files:
+        raise SystemExit(f'루프 묶음 없음: {kit} ({LOOPS})')
+    args, chain = [], ''
+    for i, f in enumerate(files):
+        lvl = next((v for k, v in MUSIC_LEVEL if k.lower() in f.stem.lower()), 0.8)
+        args += ['-stream_loop', '-1', '-i', str(f)]
+        chain += f'[{i}:a]volume={lvl}[a{i}];'
+    chain += ''.join(f'[a{i}]' for i in range(len(files))) + (f'amix=inputs={len(files)}:normalize=0,' if len(files) > 1 else '')
+    # loudnorm이 끝부분을 조금 잘라내므로 3초 길게 만든 뒤 정확히 total초로 자른다
+    # 페이드는 loudnorm 뒤에 둔다(앞에 두면 loudnorm이 줄어든 음량을 도로 키워 페이드가 사라진다)
+    chain += (f'atrim=0:{total + 3},loudnorm=I=-18:TP=-1.5:LRA=9,aresample=48000,aformat=sample_rates=48000:channel_layouts=stereo,'
+              f'afade=t=in:d=1.5,afade=t=out:st={total - 3}:d=3[out]')
+    tmp = out.with_name(out.stem + '.long.wav')
+    sh('ffmpeg', '-y', '-loglevel', 'error', *args, '-filter_complex', chain, '-map', '[out]', '-t', str(total + 3), str(tmp))
+    sh('ffmpeg', '-y', '-loglevel', 'error', '-i', str(tmp), '-t', str(total), '-c', 'copy', str(out))
+    tmp.unlink()
+    return [f.stem for f in files]
 _ST = None
 
 
@@ -123,7 +154,22 @@ def shots():
 # ---------- 2. 내레이션·길이표·자막 ----------
 def audio():
     AUDIO.mkdir(exist_ok=True)
-    rows, t, engine = [], 0.0, None
+    rows, t = [], 0.0
+    if TTS_ENGINE == 'none':
+        for sid, min_dur, text in SCENES:
+            dur = SILENT_DUR[sid]
+            rows.append({'id': sid, 'start': round(t, 2), 'dur': dur, 'narr': 0, 'text': text})
+            t += dur
+        used = music_bed(MUSIC_KIT, round(t, 2), AUDIO / 'track.wav')
+        (HERE / 'timeline.json').write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding='utf-8')
+        srt = HERE / 'aebosa_promo.srt'
+        if srt.exists():
+            srt.unlink()
+        print(f'음악만: {MUSIC_KIT} 묶음 {len(used)}개 루프({", ".join(used)}) · 전체 {round(t, 2)}초 · 자막 파일 없음')
+        for r in rows:
+            print(f"  {r['id']} {r['start']:6.2f}s +{r['dur']:5.2f}s")
+        return
+    engine = None
     for sid, min_dur, text in SCENES:
         wav = AUDIO / f'{sid}.wav'
         engine = synth(text, wav)
@@ -144,11 +190,20 @@ def audio():
     for i, r in enumerate(rows):
         inputs += ['-i', str(AUDIO / f"{r['id']}.wav")]
         chain += f"[{i}:a]adelay={int(LEAD * 1000)}:all=1,apad=whole_dur={r['dur']}[a{i}];"
-    chain += ''.join(f'[a{i}]' for i in range(len(rows))) + f'concat=n={len(rows)}:v=0:a=1[out]'
-    sh('ffmpeg', '-y', '-loglevel', 'error', *inputs, '-filter_complex', chain, '-map', '[out]', '-ar', '48000', str(AUDIO / 'narration.wav'))
+    chain += ''.join(f'[a{i}]' for i in range(len(rows))) + f'concat=n={len(rows)}:v=0:a=1,loudnorm=I=-16:TP=-1.5:LRA=11[out]'
+    sh('ffmpeg', '-y', '-loglevel', 'error', *inputs, '-filter_complex', chain, '-map', '[out]', '-ar', '48000', str(AUDIO / 'track.wav'))
     print('내레이션 완료. 전체', round(t, 2), '초')
     for r in rows:
         print(f"  {r['id']} {r['start']:6.2f}s +{r['dur']:5.2f}s (말 {r['narr']:.2f}s)")
+
+
+def music_preview(kit):
+    AUDIO.mkdir(exist_ok=True)
+    wav = AUDIO / f'music_{kit.replace(" ", "_")}.wav'
+    used = music_bed(kit, 30, wav)
+    mp3 = wav.with_suffix('.mp3')
+    sh('ffmpeg', '-y', '-loglevel', 'error', '-i', str(wav), '-codec:a', 'libmp3lame', '-b:a', '160k', str(mp3))
+    print(f'{kit}: {len(used)}개 루프({", ".join(used)}) → {mp3}')
 
 
 # ---------- 3. 장면 HTML ----------
@@ -281,13 +336,16 @@ def render(aspect):
                 print(f'  프레임 {k}/{n}', flush=True)
         b.close()
     out = HERE / f'aebosa_promo_{aspect}.mp4'
-    sh('ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS), '-i', str(frames / 'f%05d.png'), '-i', str(AUDIO / 'narration.wav'),
+    sh('ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS), '-i', str(frames / 'f%05d.png'), '-i', str(AUDIO / 'track.wav'),
        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-r', str(FPS),
-       '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', str(out))  # 음량은 웹 영상 기준(-16 LUFS)으로 맞춘다
+       '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', str(out))
     shutil.rmtree(frames, ignore_errors=True)
     print('영상 완료:', out, out.stat().st_size // 1024, 'KB ·', n, '프레임 ·', round(total, 2), '초')
 
 
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'preview'
-    {'shots': shots, 'audio': audio, 'preview': preview}.get(cmd, lambda: render(sys.argv[2]))()
+    if cmd == 'music':
+        music_preview(sys.argv[2])
+    else:
+        {'shots': shots, 'audio': audio, 'preview': preview}.get(cmd, lambda: render(sys.argv[2]))()
