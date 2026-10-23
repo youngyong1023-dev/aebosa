@@ -144,6 +144,17 @@ details.more > :not(summary) { margin-top: 8px; }
 .chipbtn.go .ico { width: 16px; height: 16px; }
 .row-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; margin: -2px -2px -6px; scrollbar-width: thin; }
 .row-scroll > * { flex: 0 0 auto; }
+/* 작품 칸: 첫 화면 6개(3열), '모두 보기' 화면은 휴대폰 3열·넓은 화면 4열 */
+.wgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; }
+@media (min-width: 600px) { #worksGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.wtile { display: grid; gap: 4px; align-content: start; min-width: 0; padding: 0; border: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.wtile b { font-size: var(--t13); font-weight: 600; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; }
+.wtile small { font-size: var(--t12); color: var(--muted); }
+.wtile .lk { width: 14px; height: 14px; margin-right: 2px; vertical-align: -2px; fill: var(--label); stroke: var(--ink); stroke-width: 2; }
+.wtile:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 8px; }
+.whead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.whead .linkbtn { font-size: var(--t13); white-space: nowrap; }
+.worksq { width: 100%; }
 
 /* 지금 어떤 때: 가로형 카드 2열(앱 칸 너비가 최대 440이라 3열은 글자가 세 줄로 꺾인다) */
 .situ { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -432,8 +443,8 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
       </div>
 
       <div class="sect">
-        <h3 id="workRowT">작품·채널별로 보기</h3>
-        <div class="row-scroll" id="workRow" role="group" aria-labelledby="workRowT"></div>
+        <div class="whead"><h3 id="workRowT">작품·채널별로 보기</h3><button class="linkbtn" type="button" id="btnAllWorks" hidden></button></div>
+        <div class="wgrid" id="workRow" role="group" aria-labelledby="workRowT"></div>
       </div>
 
       <div class="sect">
@@ -452,6 +463,15 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <p class="common" id="commonWhy" hidden></p>
         <div class="list" id="list"></div>
       </div>
+    </div>
+
+    <!-- 작품·채널 전체(모두 보기) -->
+    <div class="view" id="viewWorks" hidden>
+      <button class="linkbtn" type="button" id="btnWorksBack"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6"/></svg>영상 첫 화면으로</button>
+      <h2 id="worksTitle" tabindex="-1">작품·채널 전체</h2>
+      <p class="lead" id="worksLead"></p>
+      <label class="sr-only" for="worksQ">작품 이름 찾기</label><input class="worksq" id="worksQ" type="search" placeholder="작품 이름 찾기 (예: 타요)" autocomplete="off" enterkeyhint="search">
+      <div class="wgrid" id="worksGrid" role="group" aria-labelledby="worksTitle"></div>
     </div>
 
     <!-- 작품 화면 -->
@@ -886,8 +906,8 @@ function setStep(n) {
     li.classList.toggle('done', s !== n && state.reached.has(s));
   });
 }
-const VIEWS = ['viewProfile', 'viewHome', 'viewWork', 'viewGrowth', 'viewWorry', 'viewClinic', 'viewDeals'];
-const TAB_OF = { viewHome: 'video', viewWork: 'video', viewGrowth: 'growth', viewWorry: 'worry', viewClinic: 'clinic', viewDeals: 'deals' };
+const VIEWS = ['viewProfile', 'viewHome', 'viewWorks', 'viewWork', 'viewGrowth', 'viewWorry', 'viewClinic', 'viewDeals'];
+const TAB_OF = { viewHome: 'video', viewWorks: 'video', viewWork: 'video', viewGrowth: 'growth', viewWorry: 'worry', viewClinic: 'clinic', viewDeals: 'deals' };
 // 화면 이동: 탭마다 보던 위치를 기억한다. 작품 화면·아이 정보·재생 시트는 브라우저 기록에 남겨 휴대폰 '뒤로'로 닫히게 하고,
 // 탭끼리 옮길 때는 기록을 쌓지 않는다(뒤로를 여러 번 눌러야 나가는 일을 막는다)
 let curView = null, depth = 0, skipPop = false, afterPop = null;
@@ -924,6 +944,7 @@ window.addEventListener('popstate', e => {
 function route(view, st = {}) {
   const o = { fromPop: true, restore: true };
   if (view === 'viewWork' && st.work) openWork(st.work, null, o);
+  else if (view === 'viewWorks') openAllWorks(o);
   else if (view === 'viewProfile') openProfile(o);
   else if (TAB_OF[view] && TAB_OF[view] !== 'video') openTab(TAB_OF[view], o);
   else goHome(o);
@@ -1075,8 +1096,10 @@ function renderHome() {
     const c = situCount(s);
     return `<button type="button" data-situ="${s.key}" aria-pressed="${state.situ === s.key}" ${c ? '' : 'disabled'}>${iconOf(s.icon)}<b>${s.name}</b><span>${s.hint}</span><em>${c}개</em></button>`;
   }).join('');
-  const works = [...new Set([...p.works, ...WORK_ORDER])].filter(w => CATALOG.some(v => v.work === w && passAll(v)));
-  $('#workRow').innerHTML = works.map(w => `<button type="button" class="chipbtn go" data-gowork="${esc(w)}">${esc(w)}${CHEV}</button>`).join('');
+  const works = homeWorks();
+  $('#workRow').innerHTML = works.slice(0, 6).map(workTile).join('');
+  $('#btnAllWorks').hidden = works.length <= 6;
+  $('#btnAllWorks').innerHTML = `${works.length}개 모두 보기${CHEV}`;
   renderRecent();
   renderLimit();
   renderChips();
@@ -1143,6 +1166,27 @@ function computeList() {
   if (!rows.length && state.len) { rows = rowsFor(state.situ, null, state.query); if (rows.length) relaxed.push('길이 조건'); }
   if (!rows.length && state.situ) { rows = rowsFor(null, null, state.query); if (rows.length) relaxed.push('상황 조건'); }
   return { rows, relaxed };
+}
+const LIKE_PATH = 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'; // '좋아해요' 버튼과 같은 하트(정책 7절: label 노랑은 표시에만)
+// 작품 칸: 좋아하는 작품 먼저, 그다음 WORK_ORDER(조회수 순). 영상 조건에 맞는 영상이 하나라도 있는 작품만
+const homeWorks = () => [...new Set([...state.profile.works, ...WORK_ORDER])].filter(w => CATALOG.some(v => v.work === w && passAll(v)));
+// 썸네일은 그 작품의 한 편짜리 영상 중 첫 번째, 수는 보여 주지 않기로 한 영상을 뺀 영상 수(작품 화면 첫 줄의 수와 같다)
+function workTile(w) {
+  const vs = CATALOG.filter(v => v.work === w && passAvoid(v)), shown = vs.filter(passAll), rep = shown.find(v => !v.comp) || shown[0] || vs[0];
+  const liked = state.profile.works.includes(w);
+  const mark = liked ? `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${LIKE_PATH}"/></svg><span class="sr-only">좋아하는 작품 </span>` : '';
+  return `<button type="button" class="wtile" data-gowork="${esc(w)}">${rep ? thumbHTML(rep) : ''}<b>${mark}${esc(w)}</b><small>영상 ${vs.length}개</small></button>`;
+}
+function renderAllWorks() {
+  const raw = $('#worksQ').value.trim(), q = raw.replace(/\s/g, '').toLowerCase();
+  const list = homeWorks().filter(w => !q || w.replace(/\s/g, '').toLowerCase().includes(q));
+  $('#worksGrid').innerHTML = list.map(workTile).join('') || `<p class="empty2">${esc(josa(`'${raw}`, "'과", "'와"))} 맞는 작품이 없어요. 이름 일부만 적어 보세요.</p>`;
+}
+function openAllWorks(opt = {}) {
+  $('#worksLead').textContent = `보여 줄 수 있는 작품·채널 ${homeWorks().length}개입니다. 좋아하는 작품(하트 표시)을 먼저, 그다음 유튜브 조회수가 많은 순서로 놓았습니다.`;
+  renderAllWorks();
+  show('viewWorks', opt);
+  if (!opt.fromPop) $('#worksTitle').focus({ preventScroll: true });
 }
 function thumbHTML(v) {
   return `<span class="thumb"><span class="tile">${esc(v.work === '기타' ? v.format : v.work)}</span><img alt="" loading="lazy" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg"></span>`;
@@ -1258,6 +1302,9 @@ $('#askInput').addEventListener('search', () => { if (!$('#askInput').value) { s
 /* ---------- 작품 화면: 시즌·회차 ---------- */
 function openWork(work, langSel, opt = {}) {
   state.work = work;
+  // 뒤로 버튼 이름: '모두 보기'에서 왔으면 그 화면으로 돌아간다고 알린다
+  if (!opt.fromPop && !langSel) state.workFrom = curView;
+  $('#btnBack').lastChild.textContent = state.workFrom === 'viewWorks' ? '작품·채널 전체로' : '영상 첫 화면으로';
   const base = CATALOG.filter(v => v.work === work && passAvoid(v));
   const all = CATALOG.filter(v => v.work === work).length;
   const langKey = v => HAS_EN(v) ? v.lang : '한국어';
@@ -1286,6 +1333,10 @@ function openWork(work, langSel, opt = {}) {
   setStep(4);
 }
 $('#btnBack').addEventListener('click', () => goBack(() => goHome({ restore: true })));
+$('#btnAllWorks').addEventListener('click', () => openAllWorks());
+$('#btnWorksBack').addEventListener('click', () => goBack(() => goHome({ restore: true })));
+$('#worksQ').addEventListener('input', renderAllWorks);
+$('#viewWorks').addEventListener('click', e => { const w = e.target.closest('[data-gowork]'); if (w) openWork(w.dataset.gowork); });
 $('#viewWork').addEventListener('click', e => {
   const wl = e.target.closest('[data-worklang]');
   if (wl) { keepFocus(() => openWork(state.work, wl.dataset.worklang)); return; }
