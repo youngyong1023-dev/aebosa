@@ -72,6 +72,8 @@ if (works_dir / 'index.json').exists():
 site_doc = full_doc(body.replace('/*__SITE__*/null', json.dumps(site_cfg, ensure_ascii=False)))
 (here / 'site').mkdir(exist_ok=True)
 (here / 'site' / 'index.html').write_text(site_doc, encoding='utf-8')
+# 개인정보 처리방침 페이지(앱 안 링크가 site/privacy.html을 연다)
+shutil.copy(here / 'privacy.html', here / 'site' / 'privacy.html')
 # 로고 파일 묶음을 자체 주소 판에 싣는다(글꼴 원본·만드는 스크립트·홍보 영상은 빼고 그림·아이콘·manifest만).
 # brand/가 없으면(파일을 아직 올리지 않은 저장소) 건너뛰고 경고만 남긴다 — 머리말의 아이콘·공유 그림 링크는 그때 404가 된다
 brand_src = here / 'brand'

@@ -478,10 +478,10 @@ details.rv > summary { min-height: 28px; font-size: var(--t12); font-weight: 600
       <p class="lead">아이의 이름·사진·목소리는 받지 않습니다. 위치는 병원·약국을 찾을 때 버튼을 누른 경우에만 이 기기 안에서 씁니다.</p>
       <form class="form" id="profileForm">
         <div class="consent" id="consentBox">
-          <label><input type="checkbox" id="pConsent"> <span><a href="https://claude.ai/artifact/URtv7Bg1uWVWxiMVV9MTZP" target="_blank" rel="noopener">개인정보 처리방침</a>과 <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube 서비스 약관</a>에 동의합니다. 보호자로서 아이 정보를 입력하는 데에도 동의합니다.</span></label>
+          <label><input type="checkbox" id="pConsent"> <span><a href="https://youngyong1023-dev.github.io/aebosa/privacy.html" data-privacy target="_blank" rel="noopener">개인정보 처리방침</a>과 <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube 서비스 약관</a>에 동의합니다. 보호자로서 아이 정보를 입력하는 데에도 동의합니다.</span></label>
           <p class="hint">샘플이라 입력한 내용은 서버에 저장하지 않고 이 브라우저에만 남깁니다.</p>
         </div>
-        <p class="hint" id="consentDone" hidden>동의함 · <a href="https://claude.ai/artifact/URtv7Bg1uWVWxiMVV9MTZP" target="_blank" rel="noopener">개인정보 처리방침 보기</a></p>
+        <p class="hint" id="consentDone" hidden>동의함 · <a href="https://youngyong1023-dev.github.io/aebosa/privacy.html" data-privacy target="_blank" rel="noopener">개인정보 처리방침 보기</a></p>
         <div class="q">
           <label class="qlabel" for="pBirth"><span class="qhead">아이가 태어난 달</span><input type="month" id="pBirth" required aria-describedby="pAgeHint"></label>
           <span class="hint" id="pAgeHint"></span>
@@ -2420,6 +2420,8 @@ setInterval(() => { if (!$('#viewClinic').hidden) { renderClinicNow(); renderNea
 /* ---------- 자체 주소 판: 앱 안 지도와 가까운 곳 목록 ---------- */
 // build.py가 자체 주소 판(site/index.html)에만 { selfHosted, mapKey, dataBase }를 넣는다. Claude 공개 링크·로컬 미리보기는 null
 const SITE = /*__SITE__*/null;
+// 개인정보 처리방침: 자체 주소 판은 같은 사이트의 privacy.html, Claude 링크 판은 자체 주소의 처리방침으로 연다
+if (SITE) document.querySelectorAll('a[data-privacy]').forEach(a => { a.href = 'privacy.html'; });
 // 2026년 공휴일(한국천문연구원 월력 자료: 대체공휴일·지방선거일 포함 20일). 공휴일에는 국립중앙의료원 자료의 '공휴일' 진료 시간을 쓴다. 2027년은 발표 뒤 더한다
 const HOLIDAYS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-01', '2026-03-02', '2026-05-05', '2026-05-24', '2026-05-25', '2026-06-03',
   '2026-06-06', '2026-08-15', '2026-08-17', '2026-09-24', '2026-09-25', '2026-09-26', '2026-10-03', '2026-10-05', '2026-10-09', '2026-12-25']);
