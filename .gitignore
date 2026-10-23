@@ -9,3 +9,10 @@ index.html
 리뷰_기록표_*.xlsx
 _review_evidence/
 _yt_cache/
+# 로고·홍보 영상 작업 파일(글꼴 원본, 캡처, 내레이션 조각, 미리보기, 생성된 장면 HTML)은 올리지 않는다. 결과물(svg·png·ico·manifest·mp4·srt)만 올린다
+brand/_fonts/
+brand/promo/shots/
+brand/promo/_audio/
+brand/promo/_preview/
+brand/promo/promo_*.html
+brand/promo/timeline.json

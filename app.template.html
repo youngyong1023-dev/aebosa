@@ -2,27 +2,40 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
 /* 레이아웃: 휴대폰 한 화면 크기의 앱 칸(휴대폰에서는 아래 탭 막대) + 넓은 화면에서는 오른쪽에 '샘플 안내' 칸. 흰 바탕 한 가지 화면만 쓴다.
-   브랜드 정책 v1.3(results/2026-10-23_애보사_브랜드정책.md)의 토큰. 색·글자 크기 값은 여기에만 쓴다(build.py가 검사). */
+   브랜드 정책 v2.0(results/2026-10-23_애보사_브랜드정책.md, '포근한 아침')의 토큰. 색·글자 크기 값은 여기에만 쓴다(build.py가 검사). */
 :root {
   --paper: #ffffff;
-  --ink: #1b2333;
-  --muted: #5d6678;
-  --line: #e3e6ee;
-  --field: #858ea1;
-  --soft: #f4f6fa;
-  --label: #ffc83d;
-  --label-soft: #fff4d1;
-  --label-ink: #6b4a00;
-  --link: #2a6fd6;
-  --ok: #16784a;
+  --ink: #2a2633;
+  --muted: #6e6878;
+  --line: #ede5da;
+  --field: #8f847a;
+  --soft: #fff6ec;
+  --label: #f0824f;
+  --label-soft: #ffe9dc;
+  --label-ink: #8a3e1e;
+  --tint-1: #ffe3d0;
+  --tint-1-ink: #b84e22;
+  --tint-2: #dcefe9;
+  --tint-2-ink: #2f7f69;
+  --tint-3: #dde8fa;
+  --tint-3-ink: #3c68b8;
+  --tint-4: #fff1c9;
+  --tint-4-ink: #8a6500;
+  --tint-5: #ebe3f7;
+  --tint-5-ink: #6a4ba3;
+  --tint-6: #ece9e4;
+  --tint-6-ink: #5e5a66;
+  --link: #3c68b8;
+  --ok: #2f7f69;
   --warn: #c23b3b;
-  --scrim: rgba(27, 35, 51, .45);
-  --shadow: 0 -8px 24px rgba(27, 35, 51, .12);
-  --f-display: "Hahmlet", "Apple SD Gothic Neo", "Malgun Gothic", serif;
-  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --scrim: rgba(42, 38, 51, .45);
+  --shadow: 0 -8px 24px rgba(42, 38, 51, .12);
+  --f-display: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-body: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --t12: 12px;
   --t13: 13.5px;
   --t15: 15px;
@@ -62,10 +75,10 @@ a { color: var(--link); }
 /* 머리글: 로고 + 아이 정보 버튼(높이 60) */
 .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 @media (min-width: 600px) { .bar { padding: 8px 16px; } }
-.brand { margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--f-display); font-weight: 700; font-size: var(--t20); line-height: 1.2; }
-.logo { width: 24px; height: 24px; flex: none; margin-right: 2px; }
-.logo .lg-line { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
-.logo .lg-dot { fill: var(--label); stroke: var(--ink); stroke-width: 1.8; }
+.brand { margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--f-body); font-weight: 800; font-size: var(--t20); line-height: 1.2; letter-spacing: -0.01em; }
+.logo { width: 30px; height: 30px; flex: none; }
+.logo .lg-line { fill: none; stroke: var(--ink); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.logo .lg-dot { fill: var(--label); }
 .brand .word { display: flex; flex-direction: column; }
 .brand .word small { font-family: var(--f-body); font-size: var(--t12); font-weight: 500; line-height: 1.3; color: var(--muted); }
 .brand .tag { margin-left: 4px; font-family: var(--f-body); font-size: var(--t12); font-weight: 600; color: var(--muted); background: var(--soft); border-radius: 999px; padding: 2px 8px; }
@@ -81,7 +94,7 @@ a { color: var(--link); }
 .tabs button { position: relative; display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 48px; padding: 4px 2px; border: 0; background: none; color: var(--ink); font-size: var(--t12); font-weight: 500; line-height: 1.25; }
 .tabs .ti { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; padding: 2px 8px; box-sizing: content-box; border-radius: 999px; }
 .tabs button[aria-current="page"] { font-weight: 700; }
-.tabs button[aria-current="page"] .ti { background: var(--label); }
+.tabs button[aria-current="page"] .ti { background: var(--label); color: var(--ink); }
 .tabs button[aria-current="page"]::after { content: ""; position: absolute; left: 20%; right: 20%; height: 3px; border-radius: 3px; background: var(--ink); }
 @media (max-width: 599px) {
   .tabs { position: fixed; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--line); min-height: var(--tabbar); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
@@ -98,7 +111,7 @@ a { color: var(--link); }
 /* 화면 공통: 섹션 사이 24, 제목과 설명 사이 8 */
 .view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 16px 0; }
 @media (min-width: 600px) { .view { padding: 16px; } }
-.view h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: var(--t20); line-height: 1.35; text-wrap: balance; }
+.view h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: var(--t24); line-height: 1.3; letter-spacing: -0.01em; -webkit-text-stroke: 0.3px currentColor; text-wrap: balance; }
 .view h3, .sheet h3 { margin: 0; font-size: var(--t17); font-weight: 700; line-height: 1.4; }
 .view > h2 + .lead, .vhead + .lead { margin-top: -16px; }
 .vhead { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
@@ -138,7 +151,7 @@ details.more > :not(summary) { margin-top: 8px; }
 .chips.scroll > * { flex: 0 0 auto; }
 .chipbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font-size: var(--t13); font-weight: 600; text-decoration: none; white-space: nowrap; }
 .chipbtn:active { background: var(--soft); }
-.chipbtn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.chipbtn[aria-pressed="true"] { background: var(--label); border-color: var(--label); color: var(--ink); font-weight: 700; }
 .chipbtn[data-multi][aria-pressed="true"]::before { content: "✓"; }
 .chipbtn.go { background: var(--soft); border-color: var(--soft); }
 .chipbtn.go .ico { width: 16px; height: 16px; }
@@ -158,12 +171,17 @@ details.more > :not(summary) { margin-top: 8px; }
 
 /* 지금 어떤 때: 가로형 카드 2열(앱 칸 너비가 최대 440이라 3열은 글자가 세 줄로 꺾인다) */
 .situ { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.situ button { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-content: start; min-height: 76px; padding: 12px; border: 2px solid var(--line); border-radius: 12px; background: var(--paper); text-align: left; }
-.situ button svg { grid-row: 1 / span 3; width: 24px; height: 24px; color: var(--ink); }
+.situ button { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 2px; align-content: start; min-height: 112px; padding: 14px; border: 0; border-radius: 18px; background: var(--soft); text-align: left; box-shadow: inset 0 0 0 2px var(--soft); }
+.situ button svg { width: 36px; height: 36px; padding: 8px; box-sizing: border-box; border-radius: 12px; margin-bottom: 6px; background: var(--tint-6); color: var(--tint-6-ink); }
+.situ button:nth-child(1) svg { background: var(--tint-1); color: var(--tint-1-ink); }
+.situ button:nth-child(2) svg { background: var(--tint-2); color: var(--tint-2-ink); }
+.situ button:nth-child(3) svg { background: var(--tint-3); color: var(--tint-3-ink); }
+.situ button:nth-child(4) svg { background: var(--tint-4); color: var(--tint-4-ink); }
+.situ button:nth-child(5) svg { background: var(--tint-5); color: var(--tint-5-ink); }
 .situ button b { font-size: var(--t15); font-weight: 700; line-height: 1.3; padding-right: 16px; }
 .situ button span { font-size: var(--t12); color: var(--muted); line-height: 1.4; }
-.situ button em { font-style: normal; font-size: var(--t12); font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
-.situ button[aria-pressed="true"] { border-color: var(--ink); background: var(--label-soft); }
+.situ button em { font-style: normal; font-size: var(--t13); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.situ button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--label-soft); }
 .situ button[aria-pressed="true"]::after { content: "✓"; position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: var(--t12); font-weight: 700; }
 .situ button:disabled { background: var(--soft); }
 
@@ -171,7 +189,7 @@ details.more > :not(summary) { margin-top: 8px; }
 .toprow { display: grid; gap: 12px; border-radius: 16px; padding: 16px; background: var(--soft); scroll-margin-top: 64px; }
 .toprow-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .toprow-head h3 { font-size: var(--t17); }
-.listbar { border: 1px solid var(--line); border-radius: 16px; padding: 4px 16px; }
+.listbar { border: 1px solid var(--line); border-radius: 20px; padding: 4px 16px; }
 .listbar > summary { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; font-size: var(--t13); }
 .listbar > summary::-webkit-details-marker { display: none; }
 .listbar .lbnow { flex: 1; min-width: 0; font-weight: 600; color: var(--ink); }
@@ -190,7 +208,7 @@ details.chap > summary { min-height: 36px; padding-left: 8px; font-size: var(--t
 .chaps { list-style: none; margin: 0; padding: 0 0 0 8px; display: grid; gap: 4px; }
 .chapbtn { display: flex; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); text-align: left; font-size: var(--t13); }
 .chapbtn small { flex: none; color: var(--muted); font-size: var(--t12); font-variant-numeric: tabular-nums; }
-.card, .mini { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); text-align: left; color: var(--ink); }
+.card, .mini { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); text-align: left; color: var(--ink); }
 .mini { grid-template-columns: 112px minmax(0, 1fr); }
 .card:hover, .card:active, .mini:hover, .mini:active { background: var(--soft); }
 .thumb { position: relative; display: block; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 8px; overflow: hidden; background: var(--soft); }
@@ -223,7 +241,7 @@ details.more > summary .ico { width: 16px; height: 16px; transition: none; }
 details.more[open] > summary .ico { transform: rotate(90deg); }
 
 /* 묶음 상자 · 안내 상자 · 상태 상자 · 배지 · 태그 */
-.panel { display: grid; gap: 12px; border: 1px solid var(--line); border-radius: 16px; padding: 16px; min-width: 0; }
+.panel { display: grid; gap: 12px; border: 1px solid var(--line); border-radius: 20px; padding: 16px; min-width: 0; }
 .panel > h3, .panel > .shead { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
 .panel > h3 small, .panel .shead small { font-size: var(--t12); font-weight: 600; color: var(--muted); }
 .notice { display: flex; gap: 8px; align-items: start; border-radius: 12px; padding: 12px 16px; background: var(--label-soft); color: var(--ink); font-size: var(--t13); }
@@ -252,7 +270,7 @@ details.more[open] > summary .ico { transform: rotate(90deg); }
 .fgrid > .fill, .fgrid > .primary, .fgrid > .secondary, .fgrid > details { grid-column: 1 / -1; }
 .fcol { display: grid; gap: 12px; }
 .fgrid label, .fcol label, .qlabel { display: grid; gap: 4px; font-size: var(--t13); font-weight: 600; color: var(--ink); min-width: 0; }
-input:not([type="checkbox"]), select, textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--field); border-radius: 12px; padding: 0 12px; background: var(--paper); font-size: var(--t17); font-weight: 400; color: var(--ink); }
+input:not([type="checkbox"]), select, textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--field); border-radius: 14px; padding: 0 12px; background: var(--paper); font-size: var(--t17); font-weight: 400; color: var(--ink); }
 textarea { min-height: 96px; padding: 12px; resize: vertical; }
 input[aria-invalid="true"] { border-color: var(--warn); }
 .err { margin: 0; font-size: var(--t12); color: var(--warn); }
@@ -373,7 +391,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
 
 /* 샘플 안내(검토용, 실제 서비스에는 없음) */
 .guide { display: grid; gap: 16px; min-width: 0; align-content: start; font-size: var(--t13); }
-.guide h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: var(--t20); }
+.guide h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: var(--t24); }
 .guide h3 { margin: 0; font-size: var(--t15); font-weight: 700; }
 .guide p { margin: 0; color: var(--muted); }
 .steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: s; }
@@ -395,7 +413,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
 <main class="page">
   <section class="app" id="app" aria-label="애보사 샘플">
     <header class="bar">
-      <h1 class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="lg-line" cx="11.5" cy="10.5" r="4.5"/><path class="lg-line" d="M4 26.5a7.5 7.5 0 0 1 15 0"/><circle class="lg-dot" cx="24.5" cy="16.5" r="3.3"/><path class="lg-line" d="M20 26.5a4.5 4.5 0 0 1 9 0"/></svg><span class="word">애보사<small>애 보는 사람들</small></span><span class="tag">샘플</span></h1>
+      <h1 class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path class="lg-line" d="M13 24L32 8L51 24"/><path class="lg-line" d="M17 30V57H47V30M17 47H47"/><circle class="lg-dot" cx="32" cy="37" r="6"/></svg><span class="word">애보사<small>애 보는 사람들</small></span><span class="tag">샘플</span></h1>
       <button class="profile" id="btnProfile" type="button"></button>
     </header>
     <div class="examplebar" id="exampleBar" hidden>

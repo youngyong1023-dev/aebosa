@@ -1,15 +1,15 @@
 """브랜드 정책 검사(results/2026-10-23_애보사_브랜드정책.md 12절). build.py가 빌드 전에 부른다.
 
 1. 색 값과 사용자 정의 속성(--이름)은 :root 토큰 블록에만 쓴다. 색 속성과 SVG 칠(fill·stroke)에 이름 색(white 등)도 쓰지 않는다.
-2. 글꼴은 정책의 두 가지(Hahmlet, IBM Plex Sans KR)만 쓰고, font-family는 토큰으로만 지정한다.
-3. 글자 크기는 크기 토큰(--t…)으로만, 굵기는 400·500·600·700만 쓴다(Hahmlet은 700만).
+2. 글꼴은 정책의 두 가지(Gowun Dodum, Pretendard)만 쓰고, font-family는 토큰으로만 지정한다.
+3. 글자 크기는 크기 토큰(--t…)으로만, 굵기는 400·500·600·700·800만 쓴다(Gowun Dodum은 400만).
 4. 화면 문구에 금지 표현(판정·과장·은유·느낌표)을 쓰지 않고, 파일 어디에도 이모지를 쓰지 않는다.
 걸리면 줄 번호와 함께 알리고 빌드를 멈춘다.
 """
 import re
 
-FONTS_OK = {'Hahmlet': {'700'}, 'IBM+Plex+Sans+KR': {'400', '500', '600', '700'}}
-WEIGHTS_OK = {'400', '500', '600', '700', 'inherit'}
+FONTS_OK = {'Gowun+Dodum': {'400'}, 'Pretendard': {'400', '500', '600', '700', '800'}}  # Pretendard는 jsDelivr 공식 배포 CSS로 받는다(Google Fonts에 없음)
+WEIGHTS_OK = {'400', '500', '600', '700', '800', 'inherit'}
 COLOR = re.compile(r'(?<![\w&/="\'-])#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(')
 NAMED = re.compile(r'\b(?:white|black|red|green|blue|yellow|orange|gr[ae]y|purple|pink|brown|navy|teal|silver|gold|maroon|olive|lime|aqua|fuchsia|cyan|magenta)\b', re.I)
 COLOR_PROP = re.compile(r'(?<![\w-])(?:color|background(?:-color)?|border(?:-[a-z]+)*|outline(?:-color)?|fill|stroke|box-shadow|accent-color|caret-color|text-decoration-color|stop-color)\s*:\s*([^;}"\n]+)')

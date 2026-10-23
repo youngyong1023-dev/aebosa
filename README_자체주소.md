@@ -8,6 +8,7 @@ Claude 공개 링크 화면은 외부 지도·위치 권한·외부 API·유튜�
 |---|---|
 | `build.py` | 앱을 빌드합니다. 공개 링크용 `app.html`, 로컬 미리보기용 `index.html`, 자체 주소 판 `site/index.html`을 만듭니다. 빌드 전에 브랜드 정책 검사를 합니다 |
 | `fetch_clinics.py` | 국립중앙의료원 공공데이터에서 소아청소년과·약국·달빛어린이병원 목록과 요일별 진료 시각을 받습니다. 0.1도 격자 칸마다 나눠 `site/data/clinics/`에 씁니다 |
+| `brand/` | 로고 파일 묶음(기본형·상징·앱 아이콘·링크 공유 그림·manifest)입니다. `build.py`가 `site/brand/`로 복사하고 머리말에 아이콘과 링크 공유 정보(og:image)를 넣습니다. `brand/promo/`는 홍보 영상입니다 |
 | `.github/workflows/deploy.yml` | GitHub Actions가 매일 03:00(한국 시간)에 위의 두 단계를 실행하고, GitHub Pages에 배포합니다 |
 
 - **위치:** 보호자가 '내 위치로 가까운 곳 보기'를 누를 때만 씁니다. 내 위치 칸과 둘레 8칸의 자료만 받아 기기 안에서 거리를 잽니다. 위치를 서버로 보내지 않습니다.
@@ -21,7 +22,7 @@ Claude 공개 링크 화면은 외부 지도·위치 권한·외부 API·유튜�
 1. **개인 GitHub 계정에 새 저장소를 만듭니다.** 회사 계정이나 회사 저장소는 쓰지 않습니다.
    - GitHub 무료 계정에서 Pages를 쓰려면 저장소가 공개여야 합니다.
 2. **이 폴더의 파일을 저장소 맨 위에 올립니다.**
-   - 올릴 파일: `app.template.html`, `build.py`, `brand_check.py`, `fetch_clinics.py`, `catalog.json`, `deals_checked.json`, `who_growth.json`, `.github/`, `.gitignore`
+   - 올릴 파일: `app.template.html`, `build.py`, `brand_check.py`, `fetch_clinics.py`, `catalog.json`, `deals_checked.json`, `who_growth.json`, `brand/`(그림·아이콘·manifest·영상), `.github/`, `.gitignore`
    - `site/`와 `.keys/`는 올리지 않습니다(`.gitignore`가 막습니다).
 3. **공공데이터포털(data.go.kr)에서 인증키를 받습니다.**
    - 회원가입 후 다음 두 API에 활용신청을 합니다(자동 승인).

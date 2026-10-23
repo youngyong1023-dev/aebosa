@@ -1,0 +1,3 @@
+/* 시안 미리보기용 글꼴: brand/_fonts/(make_brand.py가 받아 둠) */
+@font-face{font-family:'Pretendard';font-weight:100 900;src:url('../_fonts/PretendardVariable.ttf') format('truetype')}
+@font-face{font-family:'Gowun Dodum';font-weight:400;src:url('../_fonts/GowunDodum-Regular.ttf') format('truetype')}

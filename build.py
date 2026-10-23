@@ -5,7 +5,6 @@ import os
 import pathlib
 import shutil
 import sys
-import urllib.parse
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))  # -I로 실행해도 옆의 brand_check.py를 쓴다
 import brand_check  # noqa: E402
@@ -29,15 +28,28 @@ reviews = pathlib.Path(os.environ.get('REVIEWS_FILE') or here / 'reviews_checked
 if reviews.exists():
     body = body.replace('/*__REVIEWS__*/null', json.dumps(json.loads(reviews.read_text(encoding='utf-8')), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
 (here / 'app.html').write_text(body, encoding='utf-8')
-# 로컬 미리보기용 아이콘: 브랜드 로고 상징(정책 6절)과 같은 그림
-FAVICON = ('<link rel="icon" href="data:image/svg+xml,' + urllib.parse.quote(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1b2333"/>'
-    '<g transform="translate(3.2 3.6) scale(.8)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">'
-    '<circle cx="11.5" cy="10.5" r="4.5"/><path d="M4 26.5a7.5 7.5 0 0 1 15 0M20 26.5a4.5 4.5 0 0 1 9 0"/>'
-    '<circle cx="24.5" cy="16.5" r="3.3" fill="#ffc83d" stroke="none"/></g></svg>') + '">\n')
+# 아이콘·링크 공유 정보: brand/의 로고 파일 묶음(정책 6절, brand/make_brand.py가 만든다). 자체 주소 판에는 brand/를 site/brand/로 복사한다
+SITE_URL = os.environ.get('SITE_URL', '').strip() or 'https://youngyong1023-dev.github.io/aebosa/'
+ONE_LINE = '0~5세 아이를 키우는 보호자가 지금 필요한 것을 짧게 찾도록 정리해 두는 웹 앱'
+BRAND_HEAD = (
+    '<link rel="icon" href="brand/icon.svg" type="image/svg+xml">\n'
+    '<link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">\n'
+    '<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">\n'
+    '<link rel="manifest" href="brand/manifest.webmanifest">\n'
+    '<meta name="theme-color" content="#ffffff">\n'
+    f'<meta name="description" content="{ONE_LINE}">\n'
+    '<meta property="og:type" content="website">\n'
+    '<meta property="og:site_name" content="애보사">\n'
+    '<meta property="og:title" content="애보사(애 보는 사람들)">\n'
+    f'<meta property="og:description" content="{ONE_LINE}">\n'
+    f'<meta property="og:image" content="{SITE_URL}brand/og-image.png">\n'
+    '<meta property="og:image:width" content="1200">\n'
+    '<meta property="og:image:height" content="630">\n'
+    f'<meta property="og:url" content="{SITE_URL}">\n'
+    '<meta name="twitter:card" content="summary_large_image">\n')
 head = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        + FAVICON)
+        + BRAND_HEAD)
 def full_doc(b):
     t = b.index('</title>') + len('</title>')
     return head + b[:t] + '\n</head>\n<body>\n' + b[t:] + '\n</body>\n</html>\n'
@@ -60,6 +72,18 @@ if (works_dir / 'index.json').exists():
 site_doc = full_doc(body.replace('/*__SITE__*/null', json.dumps(site_cfg, ensure_ascii=False)))
 (here / 'site').mkdir(exist_ok=True)
 (here / 'site' / 'index.html').write_text(site_doc, encoding='utf-8')
+# 로고 파일 묶음을 자체 주소 판에 싣는다(글꼴 원본·만드는 스크립트·홍보 영상은 빼고 그림·아이콘·manifest만).
+# brand/가 없으면(파일을 아직 올리지 않은 저장소) 건너뛰고 경고만 남긴다 — 머리말의 아이콘·공유 그림 링크는 그때 404가 된다
+brand_src = here / 'brand'
+brand_dst = here / 'site' / 'brand'
+shutil.rmtree(brand_dst, ignore_errors=True)
+brand_files = [f for f in brand_src.iterdir() if f.is_file() and f.suffix in ('.svg', '.png', '.ico', '.webmanifest')] if brand_src.is_dir() else []
+if brand_files:
+    brand_dst.mkdir(parents=True)
+    for f in brand_files:
+        shutil.copy(f, brand_dst / f.name)
+else:
+    print('경고: brand/ 로고 파일이 없어 site/brand/를 만들지 않았습니다(python3 brand/make_brand.py 로 만든 뒤 함께 올리세요)')
 print('app.html', len(body.encode()), 'bytes · index.html', len(doc.encode()), 'bytes · 영상', len(slim),
       f"· 작품별 전체 {sum(x['n'] for x in site_cfg['works']['works'].values())}편" if 'works' in site_cfg else '· 작품별 전체 목록 없음',
-      '· site/index.html(카카오맵 키', f'있음, {len(map_key)}자 — JavaScript 키는 32자)' if map_key else '없음)')
+      '· site/index.html(카카오맵 키', f'있음, {len(map_key)}자 — JavaScript 키는 32자)' if map_key else '없음)', f'· 로고 파일 {len(brand_files)}개')

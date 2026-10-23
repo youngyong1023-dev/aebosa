@@ -6,3 +6,4 @@
 
 - 올리는 방법과 필요한 키: [README_자체주소.md](README_자체주소.md)
 - 빌드: `python3 build.py` → `site/index.html`, 병원·약국 자료: `python3 fetch_clinics.py`
+- 로고·앱 아이콘·링크 공유 그림: `brand/` (다시 만들기: `python3 brand/make_brand.py`) · 홍보 영상: `brand/promo/aebosa_promo_9x16.mp4`, `aebosa_promo_16x9.mp4` (다시 만들기: `brand/promo/make_promo.py` 맨 위 설명)
