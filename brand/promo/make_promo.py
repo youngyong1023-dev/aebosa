@@ -27,16 +27,54 @@ SITE = 'youngyong1023-dev.github.io/aebosa'
 
 # 장면: id · 최소 길이(초) · 내레이션. 실제 길이 = max(최소, 0.5 앞 여유 + 내레이션 + 0.9 뒤 여유)
 SCENES = [
-    ('s1', 4.0, '애보사. 애 보는 사람들의 줄임말입니다.'),
-    ('s2', 4.5, '아이를 안고 한 손으로, 지금 필요한 것 하나만 빨리 찾고 싶을 때가 있습니다.'),
-    ('s3', 6.5, '영상은 상황으로 고릅니다. 밥 준비할 때, 차를 탔을 때, 기다릴 때. 몇 편 볼지 정하면 다 봤을 때 알려 드려요.'),
-    ('s4', 5.0, '성장 탭에는 키와 몸무게를 적습니다. 같은 나이 아이들과 비교해 보여 드려요.'),
-    ('s5', 5.5, '병원과 약국은 지금 갈 수 있는 곳부터. 위치는 버튼을 누를 때만 쓰고, 저장하거나 보내지 않습니다.'),
-    ('s6', 5.5, '기저귀와 물티슈는 한 장당 가격이 싼 순서로. 확인한 시각과 출처를 함께 적습니다.'),
-    ('s7', 6.0, '애보사의 약속입니다. 짧게. 근거를 보인다. 판정하지 않는다. 아이 정보는 적게.'),
-    ('s8', 4.5, '애보사. 휴대폰 브라우저에서 바로 열립니다.'),
+    ('s1', 4.0, "애보사. '애 보는 사람들'을 줄인 말이에요."),
+    ('s2', 4.5, '아이를 안은 채 한 손으로, 지금 필요한 것 하나만 얼른 찾고 싶을 때가 있죠.'),
+    ('s3', 6.5, '영상은 상황으로 골라요. 밥 준비할 때, 차를 탔을 때, 기다릴 때. 몇 편 볼지 정해 두면, 다 본 뒤에 알려 드려요.'),
+    ('s4', 5.0, '성장 탭에 키와 몸무게를 적으면, 또래 아이들 사이에서 어디쯤인지 한눈에 보여요.'),
+    ('s5', 5.5, '병원과 약국은 지금 갈 수 있는 곳부터 찾아요. 위치는 버튼을 누를 때만 쓰고, 어디에도 저장하거나 보내지 않아요.'),
+    ('s6', 5.5, '기저귀와 물티슈는 한 장당 가격이 싼 순서로 보여요. 언제 확인했는지, 어디서 파는지도 같이 적어 두고요.'),
+    ('s7', 6.0, '애보사의 약속이에요. 짧게 보여 주고, 근거를 함께 적고, 판정은 하지 않고, 아이 정보는 적게 받아요.'),
+    ('s8', 4.5, '애보사. 휴대폰 브라우저에서 바로 열려요.'),
 ]
 LEAD, TAIL = 0.5, 0.7
+# 내레이션 엔진: 'supertonic:<음성이름>'(F1~F5·M1~M5, 기본) 또는 'say'(맥 내장 유나). 환경 변수 AEBOSA_TTS로 바꾼다
+TTS_ENGINE = os.environ.get('AEBOSA_TTS', 'supertonic:F1')
+_ST = None
+
+
+def synth(text, wav):
+    """한 장면의 내레이션을 48kHz 모노 wav로 만든다."""
+    global _ST
+    if TTS_ENGINE.startswith('supertonic'):
+        name = TTS_ENGINE.split(':', 1)[1] if ':' in TTS_ENGINE else 'F3'
+        if _ST is None:
+            from supertonic import TTS
+            _ST = TTS('supertonic-3')
+        style = _ST.get_voice_style(name)
+        audio, _ = _ST.synthesize(text, style, lang='ko', speed=1.08, silence_duration=0.25)
+        raw = wav.with_name(wav.stem + '.raw.wav')
+        _ST.save_audio(audio, str(raw))
+        sh('ffmpeg', '-y', '-loglevel', 'error', '-i', str(raw), '-ar', '48000', '-ac', '1', str(wav))
+        raw.unlink()
+        return f'수퍼톤 {name}'
+    aiff = wav.with_suffix('.aiff')
+    sh('say', '-v', say_voice(), '-r', '172', '-o', str(aiff), text)
+    sh('ffmpeg', '-y', '-loglevel', 'error', '-i', str(aiff), '-ar', '48000', '-ac', '1', str(wav))
+    return '맥 내장 ' + say_voice()
+
+
+def say_voice():
+    """맥 내장 음성: 프리미엄 → 고급 → 기본 순으로 실제 설치된 것(say는 없는 음성을 주면 조용히 기본으로 바꾸므로 결과를 비교해 판별)."""
+    AUDIO.mkdir(exist_ok=True)
+    probe = AUDIO / '_probe'
+    sh('say', '-v', 'com.apple.voice.compact.ko-KR.Yuna', '-o', f'{probe}_compact.aiff', '애보사')
+    base = pathlib.Path(f'{probe}_compact.aiff').read_bytes()
+    for cand in ['com.apple.voice.premium.ko-KR.Yuna', 'com.apple.voice.enhanced.ko-KR.Yuna']:
+        sh('say', '-v', cand, '-o', f'{probe}_try.aiff', '애보사')
+        if pathlib.Path(f'{probe}_try.aiff').read_bytes() != base:
+            return cand
+    print('경고: 유나(프리미엄)·유나(고급)이 설치돼 있지 않아 기본(compact) 유나로 만듭니다.')
+    return 'com.apple.voice.compact.ko-KR.Yuna'
 
 
 def sh(*cmd, **kw):
@@ -63,6 +101,8 @@ def shots():
         pg = ctx.new_page()
         pg.goto('http://127.0.0.1:8765/site/index.html', wait_until='networkidle', timeout=60000)
         pg.wait_for_timeout(1200)
+        # 유튜브 썸네일(남의 저작물)은 홍보 영상에 그대로 싣지 않고 흐리게 처리한다
+        pg.add_style_tag(content='.thumb img, .wtile img, .rcard img { filter: blur(10px); }')
         def tab(name):
             pg.click(f'#tabs button[data-tab="{name}"]'); pg.wait_for_timeout(700)
         tab('video')
@@ -83,20 +123,15 @@ def shots():
 # ---------- 2. 내레이션·길이표·자막 ----------
 def audio():
     AUDIO.mkdir(exist_ok=True)
-    rows, t = [], 0.0
-    voice = os.environ.get('AEBOSA_VOICE', 'com.apple.voice.premium.ko-KR.Yuna')
-    probe = AUDIO / '_probe'
-    sh('say', '-v', voice, '-o', f'{probe}_a.aiff', '애보사'); sh('say', '-v', 'com.apple.voice.compact.ko-KR.Yuna', '-o', f'{probe}_b.aiff', '애보사')
-    if pathlib.Path(f'{probe}_a.aiff').read_bytes() == pathlib.Path(f'{probe}_b.aiff').read_bytes():
-        print(f'경고: {voice} 음성이 설치돼 있지 않아 기본(compact) 유나로 만듭니다. 시스템 설정 > 손쉬운 사용 > 콘텐츠 말하기 > 시스템 음성 > 음성 관리에서 유나(프리미엄)를 받은 뒤 다시 실행하세요.')
+    rows, t, engine = [], 0.0, None
     for sid, min_dur, text in SCENES:
-        aiff, wav = AUDIO / f'{sid}.aiff', AUDIO / f'{sid}.wav'
-        sh('say', '-v', voice, '-r', '172', '-o', str(aiff), text)
-        sh('ffmpeg', '-y', '-loglevel', 'error', '-i', str(aiff), '-ar', '48000', '-ac', '1', str(wav))
+        wav = AUDIO / f'{sid}.wav'
+        engine = synth(text, wav)
         n = float(sh('ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', str(wav)).stdout.strip())
         dur = round(max(min_dur, LEAD + n + TAIL), 2)
         rows.append({'id': sid, 'start': round(t, 2), 'dur': dur, 'narr': round(n, 2), 'text': text})
         t += dur
+    print('내레이션 엔진:', engine)
     (HERE / 'timeline.json').write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding='utf-8')
     # 자막(SRT): 내레이션이 나오는 구간
     def ts(x):
@@ -248,7 +283,7 @@ def render(aspect):
     out = HERE / f'aebosa_promo_{aspect}.mp4'
     sh('ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS), '-i', str(frames / 'f%05d.png'), '-i', str(AUDIO / 'narration.wav'),
        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-r', str(FPS),
-       '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', str(out))
+       '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', str(out))  # 음량은 웹 영상 기준(-16 LUFS)으로 맞춘다
     shutil.rmtree(frames, ignore_errors=True)
     print('영상 완료:', out, out.stat().st_size // 1024, 'KB ·', n, '프레임 ·', round(total, 2), '초')
 
