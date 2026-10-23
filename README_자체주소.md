@@ -56,14 +56,13 @@ Claude 공개 링크 화면은 외부 지도·위치 권한·외부 API·유튜�
    - `python3 -m http.server 8000 -d site`
 3. `http://localhost:8000`을 엽니다. 카카오 JavaScript SDK 도메인에 `http://localhost:8000`도 등록해야 지도가 뜹니다.
 
-## 핫딜 리뷰 채우기
+## 핫딜 리뷰 세기
 
-핫딜 카드 아래 '평점'과 '리뷰에서 나온 말'은 사람이 판매처 페이지에서 직접 읽고 적은 값입니다. 쇼핑몰 화면을 자동으로 모으지 않습니다.
+핫딜 카드 아래 '평점'과 '리뷰에서 나온 말'의 출처는 다나와 '쇼핑몰 상품리뷰'(다나와가 여러 몰의 리뷰를 모아 보여 주는 곳)입니다.
 
-1. `python3 make_review_sheet.py`로 기록표(`리뷰_기록표_날짜.xlsx`)를 만듭니다. 제품과 최저가 판매처는 `deals_checked.json`에서 채워집니다. 같은 날짜 파일이 있으면 덮어쓰지 않습니다.
-2. 기록표의 '읽는 법' 시트대로 제품마다 최저가 판매처의 최근 리뷰 50건을 읽고 노란 칸을 채웁니다.
-3. `python3 reviews_from_sheet.py 리뷰_기록표_날짜.xlsx`로 `reviews_checked.json`을 만듭니다. 빈칸이나 맞지 않는 숫자가 있으면 줄 번호를 알려 주고 멈춥니다.
-4. `reviews_checked.json`을 저장소에 올리면 배포 때 카드에 나옵니다.
-5. '지금 가격'(`deals_checked.json`)을 다시 확인할 때마다 1~4를 다시 합니다. 최저가 판매처가 바뀌었거나, 가격 확인 날보다 먼저 센 리뷰는 앱에서 보이지 않습니다.
+1. `python3 fetch_danawa_reviews.py`로 제품마다 최신순 50건을 받아 `_review_evidence/`에 둡니다(저장소에 올리지 않음, 작성자 아이디는 저장하지 않음).
+2. 리뷰를 읽고 평가 요소 분류를 `_review_evidence/review_labels_날짜.json`에 적습니다(기호와 규칙은 `count_reviews.py` 맨 위 설명).
+3. `python3 count_reviews.py 날짜`로 `reviews_checked.json`을 만들고 저장소에 올리면 배포 때 카드에 나옵니다.
+4. '지금 가격'을 다시 확인할 때마다 1~3을 다시 합니다. 가격 확인 날보다 먼저 센 리뷰는 앱에서 보이지 않습니다.
 
-기록표 파일(`.xlsx`)은 저장소에 올리지 않습니다(`.gitignore`).
+`make_review_sheet.py`·`reviews_from_sheet.py`는 판매처 페이지를 사람이 직접 읽던 때의 기록표 도구라 지금은 쓰지 않습니다.
