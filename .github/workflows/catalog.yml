@@ -1,8 +1,11 @@
 # 영상 목록 새로 받기: 공식 채널 업로드 전체를 YouTube Data API로 받아 catalog.json을 다시 만든다(fetch_youtube.py).
 # 필요한 비밀 값: YOUTUBE_API_KEY. '받기만'(dry)으로 돌리면 건수만 기록에 남기고 목록은 바꾸지 않는다.
 # 목록을 바꾸면 커밋하고 '애보사 배포'를 실행한다(봇 커밋은 push 실행을 만들지 않아서 직접 부른다).
+# 매주 월요일 04:30(한국 시간)에 다시 받는다(유튜브 API 정보는 주기적으로 새로 받는다). API 사용량은 한 번에 약 4,600단위(하루 10,000단위).
 name: 영상 목록 새로 받기
 on:
+  schedule:
+    - cron: '30 19 * * 0'
   workflow_dispatch:
     inputs:
       dry:
@@ -31,8 +34,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add catalog.json
+          git add catalog.json data/works
           if git diff --cached --quiet; then echo "바뀐 것 없음"; exit 0; fi
-          git commit -m "영상 목록 새로 받기(YouTube Data API 채널 업로드)"
+          git commit -m "영상 목록 새로 받기(YouTube Data API 채널 업로드, 작품별 전체)"
           git push
           gh workflow run deploy.yml

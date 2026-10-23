@@ -3,6 +3,7 @@
 import json
 import os
 import pathlib
+import shutil
 import sys
 import urllib.parse
 
@@ -12,7 +13,7 @@ import brand_check  # noqa: E402
 here = pathlib.Path(__file__).parent
 catalog = json.loads((here / 'catalog.json').read_text(encoding='utf-8'))
 keep = ['id', 'title', 'label', 'channel', 'work', 'chClass', 'sec', 'len', 'comp', 'season', 'ep', 'format', 'lang', 'sub', 'audioOnly', 'level', 'ageText', 'situ', 'learn', 'theme', 'scary']
-slim = [{k: v[k] for k in keep} for v in catalog]
+slim = [{**{k: v[k] for k in keep}, **({'ch': v['ch']} if v.get('ch') else {})} for v in catalog]  # ch: 챕터 구간(모음 영상)
 src = (here / 'app.template.html').read_text(encoding='utf-8')
 brand_check.run(src)  # 브랜드 정책 검사: 걸리면 여기서 멈춘다
 body = src.replace(
@@ -49,8 +50,16 @@ doc = full_doc(body)
 key_file = here / '.keys' / 'kakao_js_key.txt'
 map_key = os.environ.get('KAKAO_JS_KEY', '').strip() or (key_file.read_text(encoding='utf-8').strip() if key_file.exists() else '')
 site_cfg = {'selfHosted': True, 'mapKey': map_key or None, 'dataBase': 'data/clinics/'}
+# 작품별 전체 영상(fetch_youtube.py가 data/works/에 씀): 자체 주소 판만 작품 화면을 열 때 불러온다. 첫 화면 숫자를 위해 목차는 페이지에 넣는다
+works_dir = here / 'data' / 'works'
+if (works_dir / 'index.json').exists():
+    site_cfg['worksBase'] = 'data/works/'
+    site_cfg['works'] = json.loads((works_dir / 'index.json').read_text(encoding='utf-8'))
+    shutil.rmtree(here / 'site' / 'data' / 'works', ignore_errors=True)
+    shutil.copytree(works_dir, here / 'site' / 'data' / 'works')
 site_doc = full_doc(body.replace('/*__SITE__*/null', json.dumps(site_cfg, ensure_ascii=False)))
 (here / 'site').mkdir(exist_ok=True)
 (here / 'site' / 'index.html').write_text(site_doc, encoding='utf-8')
 print('app.html', len(body.encode()), 'bytes · index.html', len(doc.encode()), 'bytes · 영상', len(slim),
+      f"· 작품별 전체 {sum(x['n'] for x in site_cfg['works']['works'].values())}편" if 'works' in site_cfg else '· 작품별 전체 목록 없음',
       '· site/index.html(카카오맵 키', f'있음, {len(map_key)}자 — JavaScript 키는 32자)' if map_key else '없음)')

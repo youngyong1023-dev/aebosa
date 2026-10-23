@@ -178,6 +178,11 @@ details.more > :not(summary) { margin-top: 8px; }
 .reshead small { color: var(--muted); font-size: var(--t12); font-variant-numeric: tabular-nums; }
 .common { margin: 0; font-size: var(--t12); color: var(--muted); }
 .list { display: grid; gap: 8px; }
+.wrow { display: grid; gap: 4px; }
+details.chap > summary { min-height: 36px; padding-left: 8px; font-size: var(--t12); color: var(--muted); }
+.chaps { list-style: none; margin: 0; padding: 0 0 0 8px; display: grid; gap: 4px; }
+.chapbtn { display: flex; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); text-align: left; font-size: var(--t13); }
+.chapbtn small { flex: none; color: var(--muted); font-size: var(--t12); font-variant-numeric: tabular-nums; }
 .card, .mini { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); text-align: left; color: var(--ink); }
 .mini { grid-template-columns: 112px minmax(0, 1fr); }
 .card:hover, .card:active, .mini:hover, .mini:active { background: var(--soft); }
@@ -479,6 +484,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
       <button class="linkbtn" type="button" id="btnBack"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6"/></svg>영상 첫 화면으로</button>
       <h2 id="workTitle" tabindex="-1"></h2>
       <p class="lead" id="workLead"></p>
+      <div class="chips" id="workKind" role="group" aria-label="본편·동요·모음 고르기"></div>
       <div class="chips" id="workLang" role="group" aria-label="영상 언어로 거르기"></div>
       <div id="workBody" class="list"></div>
     </div>
@@ -1173,9 +1179,10 @@ const homeWorks = () => [...new Set([...state.profile.works, ...WORK_ORDER])].fi
 // 썸네일은 그 작품의 한 편짜리 영상 중 첫 번째, 수는 보여 주지 않기로 한 영상을 뺀 영상 수(작품 화면 첫 줄의 수와 같다)
 function workTile(w) {
   const vs = CATALOG.filter(v => v.work === w && passAvoid(v)), shown = vs.filter(passAll), rep = shown.find(v => !v.comp) || shown[0] || vs[0];
+  const total = workMeta(w) ? workMeta(w).n : vs.length;
   const liked = state.profile.works.includes(w);
   const mark = liked ? `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${LIKE_PATH}"/></svg><span class="sr-only">좋아하는 작품 </span>` : '';
-  return `<button type="button" class="wtile" data-gowork="${esc(w)}">${rep ? thumbHTML(rep) : ''}<b>${mark}${esc(w)}</b><small>영상 ${vs.length}개</small></button>`;
+  return `<button type="button" class="wtile" data-gowork="${esc(w)}">${rep ? thumbHTML(rep) : ''}<b>${mark}${esc(w)}</b><small>영상 ${total.toLocaleString()}개</small></button>`;
 }
 function renderAllWorks() {
   const raw = $('#worksQ').value.trim(), q = raw.replace(/\s/g, '').toLowerCase();
@@ -1203,7 +1210,7 @@ function tagsHTML(v) {
   if (v.season) t.push(`<i>시즌 ${v.season}${v.ep ? ' · ' + v.ep + '화' : ''}</i>`);
   v.theme.forEach(x => t.push(`<i>${esc(x)}</i>`));
   v.learn.forEach(x => t.push(`<i>${esc(x === '영어' ? '영어 배우기' : x)}</i>`));
-  if (v.comp) t.push('<i>여러 편 모음</i>');
+  if (v.comp) t.push(v.ch ? `<i>여러 편 모음 · 구간 ${v.ch.length}개</i>` : '<i>여러 편 모음</i>');
   if (!(v.situ.length || v.learn.length || v.theme.length)) t.push('<i>분류 전</i>');
   const m = (state.marks[v.id] || []).length;
   if (m) t.push(`<i class="mark">장면 표시 ${m}개</i>`);
@@ -1300,36 +1307,83 @@ $('#askForm').addEventListener('submit', e => { e.preventDefault(); state.query 
 $('#askInput').addEventListener('search', () => { if (!$('#askInput').value) { state.query = ''; renderList(); } });
 
 /* ---------- 작품 화면: 시즌·회차 ---------- */
-function openWork(work, langSel, opt = {}) {
+// 작품 화면: 자체 주소 판은 그 작품의 공식 채널 전체 영상(data/works/작품.json)을 처음 열 때 한 번 불러온다.
+// 첫 화면 목록(CATALOG)은 작품마다 조회수 상위만 담는다. 묶음은 본편 / 동요 / 모음 / 그 밖(2026-10-23 결정)
+const WORK_FMT = ['본편·이야기', '동요', '율동·체조', '자장가·수면', '수업·강의', '장난감 놀이'];
+const WORK_LANG = ['한국어', '한국어+영어', '영어', '말 없음'];
+const WORK_KINDS = ['본편', '동요', '모음', '그 밖'];
+const kindOf = v => (v.comp ? '모음' : v.format === '본편·이야기' ? '본편' : ['동요', '율동·체조', '자장가·수면'].includes(v.format) ? '동요' : '그 밖');
+const WORK_PAGE = 40;
+const workCache = {};
+const workMeta = w => (SITE && SITE.works && SITE.works.works[w]) || null;
+function unpackWork(work, d) {
+  return d.v.map(r => Object.assign({ id: r[0], title: r[1], label: r[1], channel: d.c[r[2]], work, chClass: '작품 공식', sec: r[3], len: '',
+    comp: !!(r[4] & 8), sub: r[4] & 1 ? '영어 자막' : '', audioOnly: !!(r[4] & 2), scary: !!(r[4] & 4), season: r[5], ep: r[6],
+    format: WORK_FMT[r[7]], lang: WORK_LANG[r[8]], level: r[9] || '', ageText: '', situ: r[10] || [], learn: r[11] || [], theme: r[12] || [] }, r[13] ? { ch: r[13] } : {}));
+}
+async function loadWork(work) {
+  if (workCache[work]) return workCache[work];
+  const m = workMeta(work);
+  if (!m) return null;
+  try {
+    const d = await fetch(SITE.worksBase + m.f + '.json').then(r => (r.ok ? r.json() : null));
+    if (!d) return null;
+    const list = unpackWork(work, d);
+    list.forEach(v => { if (!byId[v.id]) byId[v.id] = v; });
+    return (workCache[work] = list);
+  } catch (e) { return null; }
+}
+// 챕터가 있는 모음 영상: 구간마다 따로 재생한다(구간 끝에서 멈추고 '볼 편 수'에서 한 편으로 센다)
+function chapterList(v) {
+  return `<details class="more chap"><summary>${CHEV}구간 ${v.ch.length}개로 나눠 보기</summary><ol class="chaps">${v.ch.map((c, i) => {
+    const end = i + 1 < v.ch.length ? v.ch[i + 1][0] : v.sec;
+    return `<li><button type="button" class="chapbtn" data-play="${v.id}" data-start="${c[0]}" data-end="${end}" data-seg="${esc(c[1])}"><span>${esc(c[1])}</span><small>${mmss(c[0])}~${mmss(end)}</small></button></li>`;
+  }).join('')}</ol></details>`;
+}
+async function openWork(work, langSel, opt = {}) {
+  const changed = state.work !== work;
   state.work = work;
+  if (changed || opt.kind === undefined && !langSel && !opt.more) { state.workKind = null; state.workShown = WORK_PAGE; }
+  if (opt.kind !== undefined) { state.workKind = opt.kind; state.workShown = WORK_PAGE; }
+  if (langSel) { state.workLang = langSel; state.workShown = WORK_PAGE; } else if (changed) state.workLang = null;
   // 뒤로 버튼 이름: '모두 보기'에서 왔으면 그 화면으로 돌아간다고 알린다
-  if (!opt.fromPop && !langSel) state.workFrom = curView;
+  if (!opt.fromPop && !langSel && opt.kind === undefined && !opt.more) state.workFrom = curView;
   $('#btnBack').lastChild.textContent = state.workFrom === 'viewWorks' ? '작품·채널 전체로' : '영상 첫 화면으로';
-  const base = CATALOG.filter(v => v.work === work && passAvoid(v));
-  const all = CATALOG.filter(v => v.work === work).length;
+  $('#workTitle').textContent = work;
+  const meta = workMeta(work);
+  let src = CATALOG.filter(v => v.work === work);
+  if (meta) {
+    if (!workCache[work]) { $('#workLead').textContent = `${work} 영상 ${meta.n.toLocaleString()}개를 불러오는 중이에요.`; $('#workKind').innerHTML = ''; $('#workLang').innerHTML = ''; $('#workBody').innerHTML = ''; }
+    if (curView !== 'viewWork') show('viewWork', Object.assign({ focus: !opt.fromPop }, opt));
+    const full = workCache[work] || await loadWork(work);  // 이미 불러온 작품은 기다리지 않고 바로 그린다(누른 칩에 초점 유지)
+    if (state.work !== work) return;
+    if (full) src = full;
+  }
+  const base = src.filter(passAvoid);
   const langKey = v => HAS_EN(v) ? v.lang : '한국어';
   const n = { 한국어: 0, '한국어+영어': 0, 영어: 0 };
   base.forEach(v => { n[langKey(v)] += 1; });
   const keys = Object.keys(n).filter(k => n[k]);
   // 처음 열 때는 '영상 언어' 설정을 따르고, 그 언어의 영상이 없으면 전체를 보여 준다
-  let sel = langSel || (state.profile.lang === 'ko' ? '한국어' : state.profile.lang === 'en' ? '영어' : '전체');
+  let sel = state.workLang || (state.profile.lang === 'ko' ? '한국어' : state.profile.lang === 'en' ? '영어' : '전체');
   if (sel !== '전체' && !n[sel]) sel = '전체';
-  const items = base.filter(v => sel === '전체' || langKey(v) === sel);
-  $('#workTitle').textContent = work;
-  $('#workLead').textContent = `샘플에 있는 ${work} 영상 ${all}개 중 보여 주지 않기로 한 영상을 빼면 ${base.length}개입니다(${keys.map(k => `${k} ${n[k]}개`).join(' · ')}). 같은 회차가 모음 영상에도 들어 있어서 모음 영상은 따로 접어 두었습니다.`;
-  $('#workLang').innerHTML = keys.length > 1 ? ['전체', ...keys].map(k => `<button type="button" class="chipbtn" data-worklang="${k}" aria-pressed="${sel === k}">${k} ${k === '전체' ? base.length : n[k]}</button>`).join('') : '';
-  const seasons = [...new Set(items.map(v => v.season))].sort((a, b) => (a ?? 99) - (b ?? 99));
-  const row = v => cardHTML({ v, why: [], q: null });
-  $('#workBody').innerHTML = seasons.map(s => {
-    const inS = items.filter(v => v.season === s);
-    const singles = inS.filter(v => !v.comp).sort((a, b) => (a.ep ?? 999) - (b.ep ?? 999));
-    const comps = inS.filter(v => v.comp);
-    return `<section class="season"><h3>${s ? '시즌 ' + s : '시즌 정보가 없는 영상'}<small>한 편짜리 ${singles.length}개 · 모음 ${comps.length}개</small></h3>
-      ${singles.map(row).join('') || '<div class="empty">이 시즌의 한 편짜리 영상이 샘플에 없습니다.</div>'}
-      ${comps.length ? `<details class="more"><summary>${CHEV}모음 영상 ${comps.length}개(같은 회차가 들어 있을 수 있어요)</summary><div class="list">${comps.map(row).join('')}</div></details>` : ''}
-    </section>`;
-  }).join('') || '<div class="empty">보여 줄 영상이 없습니다.</div>';
-  show('viewWork', Object.assign({ focus: !opt.fromPop }, opt));
+  const inLang = base.filter(v => sel === '전체' || langKey(v) === sel);
+  const kc = Object.fromEntries(WORK_KINDS.map(k => [k, inLang.filter(v => kindOf(v) === k).length]));
+  let kind = state.workKind;
+  if (!kind || !kc[kind]) kind = WORK_KINDS.find(k => kc[k]) || '본편';
+  const items = inLang.filter(v => kindOf(v) === kind);
+  const full = meta && workCache[work];
+  $('#workLead').textContent = full
+    ? `${work} 공식 채널 영상 ${src.length.toLocaleString()}개(${SITE.works.fetchedAt} 기준) 중 보여 주지 않기로 한 영상을 빼면 ${base.length.toLocaleString()}개입니다. 조회수가 많은 순서로 놓았습니다.`
+    : `이 화면에는 ${work} 영상 중 조회수가 많은 ${src.length}개만 담았습니다${src.length !== base.length ? `(보여 주지 않기로 한 영상을 빼면 ${base.length}개)` : ''}. 전체 영상은 애보사 앱 주소에서 볼 수 있습니다.`;
+  $('#workKind').innerHTML = WORK_KINDS.filter(k => kc[k]).map(k => `<button type="button" class="chipbtn" data-workkind="${k}" aria-pressed="${kind === k}">${k} ${kc[k].toLocaleString()}</button>`).join('');
+  $('#workLang').innerHTML = keys.length > 1 ? ['전체', ...keys].map(k => `<button type="button" class="chipbtn" data-worklang="${k}" aria-pressed="${sel === k}">${k} ${(k === '전체' ? base.length : n[k]).toLocaleString()}</button>`).join('') : '';
+  const shown = items.slice(0, state.workShown || WORK_PAGE);
+  const row = v => `<div class="wrow">${cardHTML({ v, why: [], q: null })}${v.ch ? chapterList(v) : ''}</div>`;
+  $('#workBody').innerHTML = (shown.map(row).join('') || '<div class="empty">보여 줄 영상이 없습니다.</div>') +
+    (items.length > shown.length ? `<button type="button" class="secondary" data-workmore="1">${kind} 더 보기(남은 ${(items.length - shown.length).toLocaleString()}개)</button>` : '') +
+    (kind === '모음' ? `<p class="hint">같은 회차가 여러 모음에 들어 있을 수 있어요. 구간이 표시된 모음은 '구간으로 나눠 보기'에서 한 편씩 고를 수 있어요(설명란의 시각 표시 기준).</p>` : '');
+  if (curView !== 'viewWork') show('viewWork', Object.assign({ focus: !opt.fromPop }, opt));
   setStep(4);
 }
 $('#btnBack').addEventListener('click', () => goBack(() => goHome({ restore: true })));
@@ -1340,7 +1394,11 @@ $('#viewWorks').addEventListener('click', e => { const w = e.target.closest('[da
 $('#viewWork').addEventListener('click', e => {
   const wl = e.target.closest('[data-worklang]');
   if (wl) { keepFocus(() => openWork(state.work, wl.dataset.worklang)); return; }
-  const card = e.target.closest('[data-play]'); if (card) openPlayer(card.dataset.play, 0, card);
+  const wk = e.target.closest('[data-workkind]');
+  if (wk) { keepFocus(() => openWork(state.work, null, { kind: wk.dataset.workkind })); return; }
+  if (e.target.closest('[data-workmore]')) { state.workShown = (state.workShown || WORK_PAGE) + WORK_PAGE; openWork(state.work, null, { more: true }); return; }
+  const card = e.target.closest('[data-play]');
+  if (card) openPlayer(card.dataset.play, Number(card.dataset.start || 0), card, card.dataset.end ? Number(card.dataset.end) : null, card.dataset.seg || '');
 });
 
 /* ---------- 5~7. 재생·구간·끝내기·기록 ---------- */
@@ -1361,7 +1419,7 @@ function onPlaying() {
   const now = performance.now();
   const m = /[?&]v=([\w-]{11})/.exec(player && player.getVideoUrl ? player.getVideoUrl() || '' : '');
   const actual = m ? m[1] : state.current;
-  playNote('');
+  playNote(state.segNote || '');  // 구간 재생이면 구간 안내는 남긴다
   if (actual !== state.current) {
     // 끝 화면 등에서 아이가 다른 영상을 눌러 플레이어 안에서 넘어간 경우: 앱 목록 밖 영상이라 표시를 막는다
     if (state.offCatalog !== actual) { state.offCatalog = actual; sess.inPlayer += 1; }
@@ -1387,21 +1445,21 @@ function onEnded() {
   updateLimitCount();
   if (state.watched >= state.limit) finishSession();
 }
-function mountPlayer(id, start) {
+function mountPlayer(id, start, end = null) {
   const box = $('#playerBox');
   player = null;
   if (EMBED) {
     // 플레이어가 준비될 때까지 '불러오는 중'을 띄운다
     box.innerHTML = '<div id="yt"></div><span class="loading" id="pLoading">불러오는 중</span>';
     if (ytApiReady && window.YT && YT.Player) {
-      player = new YT.Player('yt', { host: 'https://www.youtube-nocookie.com', videoId: id, playerVars: { start: Math.round(start), rel: 0, playsinline: 1, autoplay: 1 }, events: {
+      player = new YT.Player('yt', { host: 'https://www.youtube-nocookie.com', videoId: id, playerVars: Object.assign({ start: Math.round(start), rel: 0, playsinline: 1, autoplay: 1 }, end ? { end: Math.round(end) } : {}), events: {
         onReady: loaded,
         onStateChange: e => { if (e.data === 1) onPlaying(); if (e.data === 0) onEnded(); },
         onError: e => { loaded(); if (sess) sess.fails.error += 1; showMetric(); playNote(`이 영상은 지금 재생할 수 없어요(오류 ${e.data}). 다른 영상을 골라 주세요.`); },
         onAutoplayBlocked: () => { loaded(); if (sess) sess.fails.autoplay += 1; showMetric(); playNote('자동 재생이 막혔어요. 플레이어의 재생 버튼을 눌러 주세요.'); }
       } });
     } else {
-      box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?start=${Math.round(start)}&rel=0&playsinline=1&autoplay=1" title="유튜브 플레이어" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><span class="loading" id="pLoading">불러오는 중</span>`;
+      box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?start=${Math.round(start)}${end ? '&end=' + Math.round(end) : ''}&rel=0&playsinline=1&autoplay=1" title="유튜브 플레이어" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><span class="loading" id="pLoading">불러오는 중</span>`;
       box.querySelector('iframe').addEventListener('load', loaded);
     }
   } else {
@@ -1413,7 +1471,7 @@ function updateLimitCount() {
 }
 // 재생 시트: 열린 동안 뒤 화면은 누를 수 없게(inert) 하고, 닫으면 시트를 연 버튼으로 초점을 돌려준다
 let sheetOpener = null;
-function openPlayer(id, start = 0, opener) {
+function openPlayer(id, start = 0, opener, end = null, seg = '') {
   const v = byId[id];
   if (!v) return;
   sheetOpener = opener || document.activeElement;
@@ -1450,7 +1508,9 @@ function openPlayer(id, start = 0, opener) {
   $('#sheet').hidden = false;
   $('#app').inert = true; $('.guide').inert = true;
   if (!wasOpen && hist('pushState', { view: curView, work: state.work, i: depth + 1, sheet: true })) depth += 1;
-  mountPlayer(id, start);
+  mountPlayer(id, start, end);
+  state.segNote = end ? `'${seg}' 구간만 재생해요(${mmss(start)}~${mmss(end)}). 구간이 끝나면 멈추고 한 편으로 셉니다.` : '';
+  if (state.segNote) playNote(state.segNote);
   setStep(5);
   $('#sheet .sheet-inner').scrollTop = 0;
   $('#sheetClose').focus();
