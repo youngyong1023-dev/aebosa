@@ -166,8 +166,14 @@ details.more > :not(summary) { margin-top: 8px; }
 .wtile small { font-size: var(--t12); color: var(--muted); }
 .wtile .lk { width: 14px; height: 14px; margin-right: 2px; vertical-align: -2px; fill: var(--label); stroke: var(--ink); stroke-width: 2; }
 .wtile:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 8px; }
-#workRow { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
-#workRow > .wtile { flex: 0 0 112px; }
+.chips.onerow { flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding-bottom: 2px; scrollbar-width: none; }
+.chips.onerow::-webkit-scrollbar { display: none; }
+#workRow .lk { width: 14px; height: 14px; fill: var(--label); stroke: var(--ink); stroke-width: 2; }
+#btnAllWorks { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+#btnAllWorks .ico { width: 14px; height: 14px; }
+.limitrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.limitrow .linkbtn { min-height: 32px; font-size: var(--t12); font-weight: 600; color: var(--muted); }
+.bestl { justify-self: start; padding: 0 8px; border-radius: 999px; background: var(--label); color: var(--ink); font-size: var(--t12); font-weight: 700; line-height: 22px; }
 .whead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .whead .linkbtn { font-size: var(--t13); white-space: nowrap; }
 .worksq { width: 100%; }
@@ -189,19 +195,17 @@ details.more > :not(summary) { margin-top: 8px; }
 .situ button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--label-soft); }
 .situ button:disabled { opacity: .5; }
 /* 영상 결과·가장 잘 맞는 3개: 2열 썸네일 격자(제목은 2줄까지) */
-#list, .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; }
+#list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; }
 #list > :not(.cwrap) { grid-column: 1 / -1; }
-#list .card, .tgrid .mini { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 0; border: 0; background: none; }
-#list .cwrap > .card, .tgrid .cwrap > .mini { padding-right: 0; }
-#list .ctitle, .tgrid .ctitle { font-size: var(--t13); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-#list .why, .tgrid .why { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+#resSect { scroll-margin-top: 64px; }
+#list .card { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 0; border: 0; background: none; }
+#list .cwrap > .card { padding-right: 0; }
+#list .ctitle { font-size: var(--t13); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#list .why { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 #list .tags { display: none; }  /* 2열 칸에서는 형식 태그 줄을 빼고 제목·채널·고른 이유만 */
-#list .clike, .tgrid .clike { top: 0; right: 0; width: 40px; height: 40px; background: var(--paper); border-radius: 0 8px 0 12px; }
+#list .clike { top: 0; right: 0; width: 40px; height: 40px; background: var(--paper); border-radius: 0 8px 0 12px; }
 
 /* 결과 묶음(앞 3개) · 조건 · 목록 */
-.toprow { display: grid; gap: 12px; border-radius: 16px; padding: 16px; background: var(--soft); scroll-margin-top: 64px; }
-.toprow-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-.toprow-head h3 { font-size: var(--t17); }
 .listbar { border: 1px solid var(--line); border-radius: 20px; padding: 4px 16px; }
 .listbar > summary { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; font-size: var(--t13); }
 .listbar > summary::-webkit-details-marker { display: none; }
@@ -211,10 +215,13 @@ details.more > :not(summary) { margin-top: 8px; }
 .listbar .lbrows { display: grid; gap: 12px; padding-block: 8px 12px; }
 .listbar .row { display: grid; gap: 8px; }
 .guidebody { display: grid; gap: 16px; }
+.segpanel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; min-width: 0; }
 .segs .chipbtn[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 700; }
 #dFeatBox, #dSortBox { display: flex; align-items: center; gap: 8px; }
 #dFeatBox > .lab, #dSortBox > .lab { flex: none; }
 #dFeatBox .chips, #dSortBox .chips { flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding-bottom: 2px; }
+#dSizeBox { padding: 8px 12px; }
+#dSizeBox > .ico { display: none; }
 #dSizeBox > div { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
 #dSizeBox .linkbtn { min-height: 32px; font-size: var(--t13); }
 .sgrp { display: grid; gap: 2px; min-width: 0; }
@@ -372,7 +379,7 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 .drow .unit { font-size: var(--t17); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .drow .unit small { font-weight: 400; color: var(--muted); font-size: var(--t12); margin-left: 2px; }
 .dlink { display: grid; gap: 4px; color: inherit; text-decoration: none; }
-details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600; color: var(--muted); }
+details.rv > summary { min-height: 28px; font-size: var(--t12); font-weight: 600; color: var(--muted); }
 .rvlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .rvlist li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: var(--t13); font-variant-numeric: tabular-nums; }
 .dlink:hover b, .dlink:focus-visible b { text-decoration: underline; }
@@ -519,15 +526,12 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
       </form>
 
       <div class="limitbar">
-        <span class="lab" id="limitLab">몇 편 볼까요?</span>
+        <div class="limitrow"><span class="lab" id="limitLab">몇 편 볼까요?</span><button class="linkbtn" type="button" id="whoBtn" aria-expanded="false" aria-controls="whoNote">WHO 화면 시간 권고</button></div>
         <div class="chips" id="limitChips" role="group" aria-labelledby="limitLab"></div>
-        <p class="hint" id="whoNote"></p>
+        <p class="hint" id="whoNote" hidden></p>
       </div>
 
-      <div class="sect">
-        <div class="whead"><h3 id="workRowT">작품·채널별로 보기</h3><button class="linkbtn" type="button" id="btnAllWorks" hidden></button></div>
-        <div class="wgrid" id="workRow" role="group" aria-labelledby="workRowT"></div>
-      </div>
+      <div class="chips onerow" id="workRow" role="group" aria-label="작품·채널별로 보기"></div>
 
       <h2 id="situT" class="situh">지금 어떤 때인가요?</h2>
       <div class="situ" id="situ" role="group" aria-labelledby="situT"></div>
@@ -543,7 +547,6 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         </details>
         <div class="relaxed" id="relaxed" hidden></div>
       </div>
-      <div class="toprow" id="situTop" hidden></div>
 
       <div class="sect" id="resSect">
         <div class="reshead"><h3 id="resTitle" tabindex="-1">조건에 맞는 영상</h3><small id="resCount"></small></div>
@@ -576,6 +579,12 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
     <!-- 성장: 아이 정보 한 줄 → 기록하기 → 가장 최근 기록 → 그래프·표 → 영유아 건강검진 → 처음 해낸 것 -->
     <div class="view" id="viewGrowth" hidden>
       <h2 class="sr-only" tabindex="-1">우리 아이 성장</h2>
+      <div class="chips segs onerow" data-segtab="growth" role="tablist" aria-label="성장 구역">
+        <button type="button" class="chipbtn" role="tab" data-seg="rec" aria-controls="gSegRec">기록·그래프</button>
+        <button type="button" class="chipbtn" role="tab" data-seg="check" aria-controls="gSegCheck">건강검진</button>
+        <button type="button" class="chipbtn" role="tab" data-seg="first" aria-controls="gSegFirst">처음 해낸 것<span id="gSegFirstN"></span></button>
+      </div>
+      <div class="segpanel" id="gSegRec" role="tabpanel">
       <section class="panel" aria-labelledby="gChildT">
         <div class="shead"><h3 id="gChildT">아이 정보</h3><button class="smallbtn" type="button" id="gChildEdit" aria-expanded="false" aria-controls="gChildFields">바꾸기</button></div>
         <p class="hint" id="gChildHint"></p>
@@ -595,15 +604,20 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <div class="chartwrap" id="gChart"></div>
         <div class="tblwrap" id="gTable"></div>
       </section>
+      </div>
+      <div class="segpanel" id="gSegCheck" role="tabpanel" hidden>
       <section class="panel" aria-labelledby="gNextT">
         <h3 id="gNextT">영유아 건강검진</h3>
         <div class="next" id="gNext"></div>
         <p class="hint">검진에서는 키·몸무게를 재고 발달평가와 상담도 받습니다.</p>
       </section>
+      </div>
+      <div class="segpanel" id="gSegFirst" role="tabpanel" hidden>
       <section class="panel" aria-labelledby="gFirstT">
         <div class="shead"><h3 id="gFirstT">처음 해낸 것</h3><button class="smallbtn" type="button" data-isheet="gFirstSheet">남기기</button></div>
         <ul class="plist" id="gFirsts"></ul>
       </section>
+      </div>
       <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>기록·기준 출처와 안내</summary><ul class="notes" id="gNotes"></ul></details>
       <div class="isheet" id="gRecSheet" role="dialog" aria-modal="true" aria-labelledby="gRecT" hidden><div class="isheet-inner">
         <div class="sheet-head"><h3 id="gRecT">키·몸무게 기록하기</h3><button class="secondary" type="button" data-iclose>닫기</button></div>
@@ -663,6 +677,12 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
     <div class="view" id="viewClinic" hidden>
       <h2 class="sr-only" tabindex="-1">병원·약국</h2>
       <a class="primary fill" href="tel:119"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h3l2 5-2 1.5a11 11 0 0 0 4.5 4.5L15 13l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/></svg>119에 전화하기</a>
+      <div class="chips segs onerow" data-segtab="clinic" role="tablist" aria-label="병원·약국 구역">
+        <button type="button" class="chipbtn" role="tab" data-seg="near" aria-controls="cSegNear">지금 갈 수 있는 곳</button>
+        <button type="button" class="chipbtn" role="tab" data-seg="mine" aria-controls="cSegMine">자주 가는 곳<span id="cSegMineN"></span></button>
+        <button type="button" class="chipbtn" role="tab" data-seg="vax" aria-controls="cSegVax">예방접종<span id="cSegVaxN"></span></button>
+      </div>
+      <div class="segpanel" id="cSegNear" role="tabpanel">
       <section class="panel" aria-labelledby="cFindT">
         <h3 id="cFindT">지금 갈 수 있는 곳 <small id="cMode"></small></h3>
         <div class="sect" id="cNearBox" hidden>
@@ -682,6 +702,8 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <details class="more" id="cMore"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>다른 찾기 화면</summary><div class="links" id="cMoreLinks"></div></details>
         <p class="hint" id="cLinkHint">지도 링크를 누르면 카카오맵이나 네이버 지도가 휴대폰의 현재 위치에서 가까운 곳을 찾습니다. 이 화면은 위치를 받지 않습니다.</p>
       </section>
+      </div>
+      <div class="segpanel" id="cSegMine" role="tabpanel" hidden>
       <section class="panel" aria-labelledby="cMineT">
         <h3 id="cMineT">자주 가는 병원·약국 <small id="cNow"></small></h3>
         <ul class="plist" id="cList"></ul>
@@ -709,12 +731,15 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
             <button class="primary fill" type="submit">추가하기</button>
           </form>
       </div></div>
+      </div>
+      <div class="segpanel" id="cSegVax" role="tabpanel" hidden>
       <section class="panel" aria-labelledby="cVaxT">
         <h3 id="cVaxT">예방접종 <small>2026년 표준 일정</small></h3>
         <div class="next" id="cVaxNext"></div>
         <details class="more" id="cVaxNear"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>앞뒤 일정과 '맞았어요' 표시 <span id="cVaxNearN"></span></summary><div class="tblwrap" id="cVax"></div></details>
         <details class="more"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>만 6세까지 전체 일정 보기</summary><div class="tblwrap" id="cVaxAll"></div></details>
       </section>
+      </div>
       <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>자료 출처와 안내</summary><ul class="notes" id="cNotes"></ul></details>
     </div>
 
@@ -940,7 +965,7 @@ const byId = Object.fromEntries(CATALOG.map(v => [v.id, v]));
 // 썸네일을 못 불러오면(공개 링크 화면 등) 작품 이름 칸만 남긴다
 document.addEventListener('error', e => { if (e.target.tagName === 'IMG' && e.target.closest('.thumb')) e.target.remove(); }, true);
 // 선 아이콘(정책 9절): 펼치기 · 아래 화살표 · 새 창
-const LIST_STEP = 10;  // 영상 결과 목록을 한 번에 보여 주는 편수(휴대폰에서 목록이 너무 길어지지 않게). 전체는 '이어서 보기'로 틀 수 있다
+const LIST_STEP = 6;  // 영상 결과를 한 번에 보여 주는 편수(2열 3줄, 휴대폰 한 화면 안팎). 전체는 '이어서 보기'로 틀 수 있다
 const CHEV = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>';
 const DOWN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>';
 const EXT = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"/></svg><span class="sr-only">(새 창)</span>';
@@ -1211,9 +1236,9 @@ function renderHome() {
     return `<button type="button" data-situ="${s.key}" aria-pressed="${state.situ === s.key}" ${c ? '' : 'disabled'}>${iconOf(s.icon)}<b>${s.name}</b><span class="sr-only">${s.hint}</span><em>${c}</em></button>`;
   }).join('');
   const works = homeWorks();
-  $('#workRow').innerHTML = works.slice(0, 6).map(workTile).join('');
-  $('#btnAllWorks').hidden = works.length <= 6;
-  $('#btnAllWorks').innerHTML = `${works.length}개 모두 보기${CHEV}`;
+  // 작품·채널: 칩 한 줄. 맨 앞 '작품·채널 전체' 칩으로 모두 보기, 그 뒤로 좋아하는 작품·차트 순 작품
+  $('#workRow').innerHTML = `<button type="button" class="chipbtn" id="btnAllWorks">작품·채널 전체 ${works.length}${CHEV}</button>` +
+    works.slice(0, 12).map(w => `<button type="button" class="chipbtn" data-gowork="${esc(w)}">${state.profile.works.includes(w) ? '<svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="' + LIKE_PATH + '"/></svg><span class="sr-only">좋아하는 작품 </span>' : ''}${esc(w)}</button>`).join('');
   renderRecent();
   renderLimit();
   renderChips();
@@ -1357,12 +1382,12 @@ function tagsHTML(v) {
   return t.join('');
 }
 // common: 보이는 영상 모두에 같은 '고른 이유'(목록 위에 한 번만 적고 카드에서는 뺀다)
-function cardHTML(row, common = []) {
+function cardHTML(row, common = [], best = false) {
   const v = row.v, why = row.why.filter(w => !common.includes(w));
   const start = row.q && row.q[0].mark ? ` data-start="${row.q[0].mark.sec}"` : '';
   return `<div class="cwrap"><button type="button" class="card" data-play="${v.id}"${start}>
     ${thumbHTML(v)}
-    <span class="cmeta">
+    <span class="cmeta">${best ? '<span class="bestl">가장 잘 맞음</span>' : ''}
       <span class="ctitle">${esc(v.title)}</span>
       <span class="yt">${esc(metaLine(v))}</span>
       <span class="tags">${tagsHTML(v)}</span>
@@ -1377,34 +1402,21 @@ function whoNote() {
   // 2세·3~4세 'sedentary screen time should be no more than 1 hour'
   return n < 12 ? 'WHO는 만 1세 미만 아이에게는 화면을 보여 주지 말라고 권합니다.' : n < 24 ? 'WHO는 만 1세 아이에게 앉아서 화면을 보는 시간을 권하지 않습니다.' : n < 60 ? 'WHO는 만 2~4세 아이가 앉아서 화면을 보는 시간을 하루 1시간 이내로 권합니다.' : '';
 }
-// 상황을 고르거나 말로 찾으면 '지금 어떤 때' 바로 아래에 조건에 가장 잘 맞는 3개를 먼저 보여 주고, 아래 목록에서는 그 3개를 뺀다
-function renderTop(rows) {
-  const box = $('#situTop');
+// 상황을 고르거나 말로 찾으면 결과 격자 맨 앞 3칸에 '가장 잘 맞음'을 붙인다(따로 칸을 두지 않아 화면이 짧아진다)
+function listHead() {
   const S = SITUATIONS.find(x => x.key === state.situ);
-  if (!state.query && !S) { box.hidden = true; return false; }
-  const head = state.query ? `${josa(`'${state.query}`, "'으로", "'로")} 찾은 영상` : S.name;
-  const top = rows.slice(0, 3);
-  const count = !top.length ? '' : rows.length > 3 ? ` · 조건에 가장 잘 맞는 ${top.length}개` : ` · 조건에 맞는 영상 ${top.length}개`;
-  box.innerHTML = `<div class="toprow-head"><h3>${esc(head)}${count}</h3>${rows.length > 3 ? `<button type="button" class="linkbtn" id="toList">나머지 ${rows.length - 3}개 보기</button>` : ''}</div>` + playOptsHTML('list', rows.length) +
-    (top.length ? '<div class="tgrid">' + top.map(r => {
-      const start = r.q && r.q[0].mark ? ` data-start="${r.q[0].mark.sec}"` : '';
-      return `<div class="cwrap"><button type="button" class="mini" data-play="${r.v.id}"${start}>${thumbHTML(r.v)}<span class="cmeta"><span class="ctitle">${esc(r.v.title)}</span><span class="yt">${esc(metaLine(r.v))}</span>${r.why.length ? `<span class="why"><b>고른 이유</b> ${esc(r.why.slice(0, 2).join(' · '))}</span>` : ''}</span></button>${likeBtnHTML(r.v)}</div>`;
-    }).join('') + '</div>' : '<p class="empty2">조건에 맞는 영상이 아직 없어요.</p>');
-  box.hidden = false;
-  return true;
+  return state.query ? `${josa(`'${state.query}`, "'으로", "'로")} 찾은 영상` : S ? S.name : '조건에 맞는 영상';
 }
-function showTop() { const box = $('#situTop'); if (!box.hidden) box.scrollIntoView({ block: 'nearest' }); }
+function showTop() { $('#resSect').scrollIntoView({ block: 'start' }); }
 function renderList() {
   if (pick) queueMicrotask(renderPick);  // 고르는 중이면 다시 그린 카드에 고른 표시를 붙인다
   const { rows, relaxed } = computeList();
   state.lastRows = rows.map(r => r.v.id);
-  const topShown = renderTop(rows);
-  const rest = topShown ? rows.slice(3) : rows;
-  // 위의 '가장 잘 맞는 3개' 칸에 이어서 보기가 있으면 아래 목록에는 두지 않고, 3개가 전부면 아래 목록 칸을 숨긴다
-  $('#resPlay').innerHTML = topShown ? '' : playOptsHTML('list', rows.length);
-  $('#resSect').hidden = topShown && !rest.length;
-  $('#resTitle').textContent = topShown ? '그 밖에 조건에 맞는 영상' : '조건에 맞는 영상';
-  $('#resCount').textContent = rest.length + '개';
+  const ranked = !!(state.query || state.situ);  // 상황·말로 찾기면 앞 3개가 조건에 가장 잘 맞는 영상
+  const rest = rows;
+  $('#resPlay').innerHTML = playOptsHTML('list', rows.length);
+  $('#resTitle').textContent = listHead();
+  $('#resCount').textContent = rows.length.toLocaleString() + '개';
   $('#relaxed').hidden = !relaxed.length;
   $('#relaxed').textContent = relaxed.length ? `조건에 맞는 영상이 없어서 ${relaxed.join('과 ')}을 뺐어요. 보여 주지 않기로 한 영상은 계속 빼요.` : '';
   const shown = rest.slice(0, state.shown);
@@ -1416,8 +1428,7 @@ function renderList() {
     list.innerHTML = '<div class="empty"><b>조건에 맞는 영상이 아직 없어요.</b><span>샘플에서는 제목만 보고 임시로 분류해서 빈 곳이 있어요. 실제 서비스에서는 사람이 붙인 분류와 장면 표시로 채워요.</span></div>';
     return;
   }
-  if (!rest.length) { list.innerHTML = `<p class="empty2">위 ${rows.length}개가 조건에 맞는 영상 전부예요.</p>`; return; }
-  list.innerHTML = shown.map(r => cardHTML(r, common)).join('') + (rest.length > state.shown ? `<button type="button" class="secondary fill" id="moreBtn">${Math.min(LIST_STEP, rest.length - state.shown)}개 더 보기 · 남은 ${rest.length - state.shown}개</button>` : '');
+  list.innerHTML = shown.map((r, i) => cardHTML(r, common, ranked && i < 3)).join('') + (rest.length > state.shown ? `<button type="button" class="secondary fill" id="moreBtn">${Math.min(LIST_STEP, rest.length - state.shown)}개 더 보기 · 남은 ${rest.length - state.shown}개</button>` : '');
 }
 $('#viewHome').addEventListener('click', e => {
   const situ = e.target.closest('[data-situ]');
@@ -1429,7 +1440,6 @@ $('#viewHome').addEventListener('click', e => {
     showTop();
     return;
   }
-  if (e.target.closest('#toList')) { $('.reshead').scrollIntoView({ block: 'start' }); $('#resTitle').focus({ preventScroll: true }); return; }
   const lg = e.target.closest('[data-lang]');
   if (lg) { state.profile.lang = lg.dataset.lang; store.set('profile', state.profile); state.shown = LIST_STEP; keepFocus(renderHome); setStep(4); return; }
   const lim = e.target.closest('[data-limit]');
@@ -1541,7 +1551,8 @@ async function openWork(work, langSel, opt = {}) {
   setStep(4);
 }
 $('#btnBack').addEventListener('click', () => goBack(() => goHome({ restore: true })));
-$('#btnAllWorks').addEventListener('click', () => openAllWorks());
+$('#whoBtn').addEventListener('click', () => { const open = $('#whoNote').hidden; $('#whoNote').hidden = !open; $('#whoBtn').setAttribute('aria-expanded', open); });
+$('#workRow').addEventListener('click', e => { if (e.target.closest('#btnAllWorks')) openAllWorks(); });
 // 작품 화면의 '좋아하는 작품': 아이 정보의 '좋아하는 작품'과 같은 목록을 바로 넣고 뺀다
 $('#workLike').addEventListener('click', () => {
   const w = state.work, ws = state.profile.works;
@@ -1672,7 +1683,7 @@ function shuffle(a) {
   return b;
 }
 // 골라서 보기: 목록에서 볼 영상을 눌러 고르고(편수를 정했으면 그 편수까지) 고른 순서대로 이어서 튼다
-const PICK_AREA = { list: ['#situTop', '#list'], liked: ['#liked'], work: ['#workBody'] };
+const PICK_AREA = { list: ['#list'], liked: ['#liked'], work: ['#workBody'] };
 const PICKABLE = ':is(.card, .mini, .rcard)[data-play]';
 let pick = null;
 function startPick(src, name) {
@@ -1912,7 +1923,7 @@ document.addEventListener('click', e => {
   if (qb) {
     const src = qb.dataset.queue;
     const ids = src === 'liked' ? likedIds().filter(id => passAvoid(byId[id])) : src === 'work' ? (state.workItems || []) : state.lastRows;
-    const name = src === 'liked' ? '좋아해요' : src === 'work' ? `${state.work} ${state.workKindNow || ''}`.trim() : ($('#situTop').hidden ? '조건에 맞는 영상' : $('#situTop h3').textContent.split(' · ')[0]);
+    const name = src === 'liked' ? '좋아해요' : src === 'work' ? `${state.work} ${state.workKindNow || ''}`.trim() : listHead();
     const mode = qb.dataset.mode || 'all';
     if (mode === 'pick') { startPick(src, name); return; }
     if (mode === 'random') { startQueue(shuffle(ids).slice(0, state.limit ? Math.min(state.limit, ids.length) : ids.length), `${name}(랜덤)`, qb); return; }
@@ -2083,7 +2094,32 @@ function chartSVG(kind) {
   </svg>` + (segs.length ? '<p class="hint">가는 실선 = WHO 50백분위 · 점선 = 3·97백분위 · 굵은 선과 노란 점 = 우리 아이 기록</p>' : '');
 }
 let gChildOpen = false;
+// 탭 안 칩(성장·병원·약국): 한 탭의 서로 다른 일을 하나씩 보여 준다. 칩에는 건수를 붙인다
+const SEG = { growth: 'rec', clinic: 'near' };
+function renderSegs(tab) {
+  const box = document.querySelector(`[data-segtab="${tab}"]`);
+  if (!box) return;
+  box.querySelectorAll('[data-seg]').forEach(b => {
+    const on = b.dataset.seg === SEG[tab];
+    b.setAttribute('aria-selected', on);
+    $('#' + b.getAttribute('aria-controls')).hidden = !on;
+  });
+  if (tab === 'growth') $('#gSegFirstN').textContent = firsts.length ? ` ${firsts.length}` : '';
+  if (tab === 'clinic') {
+    $('#cSegMineN').textContent = clinics.length ? ` ${clinics.length}` : '';
+    const late = VAX.filter(v => vaxState(v, ageMonths(new Date())).key === 'warn').length;
+    $('#cSegVaxN').textContent = late ? ` · 확인 필요 ${late}` : '';
+  }
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-segtab] [data-seg]');
+  if (!b) return;
+  const tab = b.closest('[data-segtab]').dataset.segtab;
+  SEG[tab] = b.dataset.seg;
+  renderSegs(tab);
+});
 function renderGrowth() {
+  renderSegs('growth');
   const now = new Date(), age = ageMonths(now), b = birthOf();
   $('#gSex').value = child.sex;
   $('#gBirth').value = child.birthDate;
@@ -2245,7 +2281,7 @@ $('#viewWorry').addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.wcat) { wCat = t.dataset.wcat; keepFocus(renderWorry); }
   else if (t.dataset.wnew) { wNew = t.dataset.wnew; keepFocus(renderWorry); }
-  else if (t.dataset.goclinic) openTab('clinic', { replace: true });
+  else if (t.dataset.goclinic) { SEG.clinic = 'near'; openTab('clinic', { replace: true }); }
   else if (t.dataset.wfilter) { wFilter = t.dataset.wfilter; keepFocus(renderWorry); }
   else if (t.dataset.wmove) {
     const w = worries.find(x => x.id === t.dataset.wmove);
@@ -2293,6 +2329,7 @@ function clinicState(c, now = new Date()) {
 const hoursText = c => [['평일', c.wo, c.wc], ['토', c.so, c.sc], ['일', c.ho, c.hc]].map(([d, o, cl]) => `${d} ${o && cl ? o + '~' + cl : '휴무'}`).join(' · ') + (c.lo && c.lc ? ` · 점심 ${c.lo}~${c.lc}` : '');
 // 1분마다 시각·여는지 여부만 다시 쓴다(열어 둔 입력칸·펼친 상자는 건드리지 않는다)
 function renderClinicNow() {
+  renderSegs('clinic');
   const now = new Date();
   $('#cNow').textContent = `${DAYS[now.getDay()]}요일 ${hhmm(now.getHours() * 60 + now.getMinutes())} 기준`;
   renderNear(now);
@@ -2302,6 +2339,7 @@ function renderClinicNow() {
     : '<li class="empty2">자주 가는 소아과·약국의 여는 시간을 적어 두면, 지금 문을 열었는지 여기서 바로 보여 드려요.</li>';
 }
 function renderClinic(opening) {
+  renderSegs('clinic');
   renderClinicNow();
   $('#cNearBox').hidden = !SITE;
   $('#cLinkHead').hidden = true;
@@ -2335,6 +2373,7 @@ $('#cForm').addEventListener('submit', e => {
 });
 // 예방접종: 지금 맞을 시기·다음 접종·지난 일정 요약 + 가까운 일정 표(전체는 접어 둠)
 function renderVax(now) {
+  renderSegs('clinic');
   const age = ageMonths(now), b = birthOf();
   const vNow = VAX.filter(v => vaxState(v, age).key === 'mark');
   const vNext = VAX.find(v => age < v.from && !vaxDone.has(v.id));
@@ -2588,7 +2627,7 @@ const latestW = () => [...growth].filter(r => r.w).sort((p, q) => p.date.localeC
 // 한 장 가격(배송비 포함) · 아이 몸무게·성별에 맞는 상품인지(몸무게·성별을 모르면 맞는 것으로 본다)
 const sheetPrice = d => (d.price + (d.ship || 0)) / d.sheets;
 const fitsChild = (d, w, sex) => (!d.kg || w == null || (d.kg[0] <= w && w <= d.kg[1])) && (!d.sex || !sex || d.sex === sex);
-const DEAL_FIRST = 5;  // 핫딜 '지금 가격'에서 처음 보여 주는 상품 수(나머지는 펼쳐 본다)
+const DEAL_FIRST = 3;  // 핫딜 '지금 가격'에서 처음 보여 주는 상품 수: 한 장당 가격이 싼 3개(휴대폰 한 화면 안팎), 나머지는 펼쳐 본다
 function renderLive() {
   const groups = (DEALS && DEALS.groups) || [];
   $('#dLiveKind').hidden = $('#dLiveTgt').hidden = $('#dFeatBox').hidden = $('#dSortBox').hidden = !groups.length;
@@ -2627,8 +2666,7 @@ function renderLive() {
     const u = unit(d), hit = target != null && u <= target;
     return `<li><a class="dlink" href="${esc(d.link)}" target="_blank" rel="noopener">
       <span class="drow"><b>${esc(d.title)}</b><span class="unit">${u.toFixed(1)}원<small>/장</small></span></span>
-      <span class="meta">${d.kg ? `권장 ${d.kg[0]}~${d.kg[1]}kg · ` : ''}${d.gsm ? `평량 ${d.gsm}gsm · ` : ''}${esc(d.size)} · ${esc(d.mall)} ${won(d.price)}원${d.ship ? ` + 배송비 ${won(d.ship)}원` : ' · 무료배송'}</span>
-      ${best || hit ? `<span class="btnrow">${best ? '<span class="st mark">한 장당 가장 쌈</span>' : ''}${hit ? '<span class="st ok">목표가 이하</span>' : ''}</span>` : ''}
+      <span class="meta">${best ? '<span class="st mark">한 장당 가장 쌈</span> ' : ''}${hit ? '<span class="st ok">목표가 이하</span> ' : ''}${d.kg ? `권장 ${d.kg[0]}~${d.kg[1]}kg · ` : ''}${d.gsm ? `평량 ${d.gsm}gsm · ` : ''}${esc(d.size)} · ${esc(d.mall)} ${won(d.price)}원${d.ship ? ` + 배송비 ${won(d.ship)}원` : ' · 무료배송'}</span>
       ${(d.feat || []).length ? `<span class="tags">${d.feat.map(k => `<i>${esc(featName(k))}</i>`).join('')}</span>` : ''}<span class="sr-only">(새 창)</span></a>${reviewBlock(d, g.kind)}</li>`;
   };
   const bestFirst = sortKey === 'unit';
@@ -2819,7 +2857,7 @@ $('#viewDeals').addEventListener('click', e => {
   const sg = e.target.closest('[data-dseg]');
   if (sg) { dSeg = sg.dataset.dseg; renderSeg(); return; }
   const go = e.target.closest('[data-gotab]');
-  if (go) { openTab(go.dataset.gotab, { replace: true }); return; }
+  if (go) { if (go.dataset.gotab === 'growth') SEG.growth = 'rec'; openTab(go.dataset.gotab, { replace: true }); return; }
   const kk = e.target.closest('[data-kkind]');
   if (kk) { kKind = kk.dataset.kkind; keepFocus(renderCheck); return; }
   const g = e.target.closest('[data-dgroup]');
