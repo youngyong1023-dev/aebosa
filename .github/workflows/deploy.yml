@@ -2,7 +2,10 @@
 # 필요한 저장소 비밀 값(Settings → Secrets and variables → Actions):
 #   DATA_GO_KR_KEY  공공데이터포털 일반 인증키(Decoding) — 국립중앙의료원 병·의원 찾기·약국 정보 활용신청 후
 #   KAKAO_JS_KEY    카카오 개발자 앱의 JavaScript 키 — 카카오맵 사용 설정 ON, JavaScript SDK 도메인에 Pages 주소 등록 후
-# 자료 받기가 실패하면, 이미 배포된 자료가 있을 때는 그 자료를 그대로 다시 받아 앱을 배포하고(다시 받기도 실패하면 배포하지 않아 직전 판이 남는다), 없을 때는 자료 없이 앱만 배포한다.
+# 자료 받기가 실패하면(공공데이터포털이 GitHub 서버 요청에 시간 초과로 응답하지 않는 날이 있다) 이전 자료를 다시 써서 앱은 배포한다.
+#   1) 직전에 성공한 배포의 결과물(github-pages, 7일 보관)에서 병원·약국 자료를 꺼내 쓴다
+#   2) 그것도 없으면 지금 배포된 자료를 칸 목록(meta.json의 cellList)대로 다시 받는다
+#   둘 다 안 되면 배포하지 않아 직전 판이 그대로 남는다. 배포된 자료가 아예 없을 때만 자료 없이 앱을 배포한다.
 name: 애보사 배포
 on:
   push:
@@ -14,6 +17,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read   # 직전 성공 배포의 결과물을 내려받는 데 쓴다
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -32,13 +36,21 @@ jobs:
       - name: 병원·약국 자료 받기(키가 없거나, 받기에 실패했는데 배포된 자료도 없으면 자료 없이 배포)
         env:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          GH_TOKEN: ${{ github.token }}
           LIVE_META: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/clinics/meta.json
         run: |
           if [ -z "$DATA_GO_KR_KEY" ]; then
             echo "::warning::DATA_GO_KR_KEY가 없어 병원·약국 자료 없이 배포합니다"
           elif ! python3 -I -B fetch_clinics.py; then
-            if curl -sf -o /dev/null "$LIVE_META"; then
-              # 배포된 자료가 있으면 그대로 다시 써서 앱은 배포한다(자료 칸 목록이 없으면 배포를 멈춘다)
+            prev=$(gh run list -R "$GITHUB_REPOSITORY" -w deploy.yml -s success -L 1 --json databaseId --jq '.[0].databaseId // empty' || true)
+            P="${RUNNER_TEMP:?}/prev"; rm -rf "$P" && mkdir -p "$P/x"
+            if [ -n "$prev" ] && gh run download "$prev" -R "$GITHUB_REPOSITORY" -n github-pages -D "$P" \
+               && tar -xf "$P/artifact.tar" -C "$P/x" ./data/clinics \
+               && [ -f "$P/x/data/clinics/meta.json" ]; then
+              rm -rf site/data/clinics && mkdir -p site/data && cp -R "$P/x/data/clinics" site/data/
+              echo "::warning::병원·약국 자료 받기에 실패해 직전 성공 배포(실행 $prev)의 자료 $(ls site/data/clinics | wc -l)개 파일을 그대로 씁니다"
+            elif curl -sf -o /dev/null "$LIVE_META"; then
+              # 배포된 자료가 있으면 칸 목록대로 다시 받아 앱은 배포한다(칸 목록이 없으면 배포를 멈춘다)
               if python3 -I -B mirror_clinics.py "${LIVE_META%meta.json}"; then
                 echo "::warning::병원·약국 자료 받기에 실패해 배포된 자료를 그대로 다시 씁니다"
               else
@@ -52,6 +64,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+          retention-days: 7   # 다음 배포에서 병원·약국 자료 받기가 실패하면 이 결과물의 자료를 다시 쓴다
   deploy:
     needs: build
     runs-on: ubuntu-latest
