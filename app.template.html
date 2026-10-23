@@ -85,9 +85,10 @@ a { color: var(--link); }
 .profile { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; max-width: 50%; padding: 0 12px 0 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); font-size: var(--t13); font-weight: 600; white-space: nowrap; }
 .profile .pt { overflow: hidden; text-overflow: ellipsis; }
 .profile .ico { width: 16px; height: 16px; }
-.examplebar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; padding: 8px 12px; margin-top: 12px; border-radius: 12px; background: var(--label-soft); color: var(--label-ink); font-size: var(--t13); }
+.examplebar { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px 0 12px; margin-top: 8px; border-radius: 12px; background: var(--label-soft); color: var(--label-ink); font-size: var(--t13); }
 @media (min-width: 600px) { .examplebar { margin: 12px 16px 0; } }
-.examplebar .linkbtn { color: var(--ink); min-height: 32px; }
+.examplebar .linkbtn { flex: none; color: var(--ink); min-height: 40px; font-size: var(--t13); }
+#exampleText { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* 탭 막대: 넓은 화면은 위, 휴대폰은 아래(한 손 사용) */
 .tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--paper); z-index: 20; }
@@ -165,25 +166,37 @@ details.more > :not(summary) { margin-top: 8px; }
 .wtile small { font-size: var(--t12); color: var(--muted); }
 .wtile .lk { width: 14px; height: 14px; margin-right: 2px; vertical-align: -2px; fill: var(--label); stroke: var(--ink); stroke-width: 2; }
 .wtile:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 8px; }
+#workRow { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+#workRow > .wtile { flex: 0 0 112px; }
 .whead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .whead .linkbtn { font-size: var(--t13); white-space: nowrap; }
 .worksq { width: 100%; }
 
 /* 지금 어떤 때: 가로형 카드 2열(앱 칸 너비가 최대 440이라 3열은 글자가 세 줄로 꺾인다) */
-.situ { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.situ button { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 2px; align-content: start; min-height: 112px; padding: 14px; border: 0; border-radius: 18px; background: var(--soft); text-align: left; box-shadow: inset 0 0 0 2px var(--soft); }
-.situ button svg { width: 36px; height: 36px; padding: 8px; box-sizing: border-box; border-radius: 12px; margin-bottom: 6px; background: var(--tint-6); color: var(--tint-6-ink); }
+/* 지금 어떤 때: 가로 칩 한 줄. 결과를 내려 봐도 화면 위에 붙어 있어 상황을 바로 바꿀 수 있다 */
+.situh { margin-bottom: -12px; }
+.situ { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 15; display: flex; gap: 8px; overflow-x: auto; padding-block: 8px; margin-block: -8px; background: var(--paper); scrollbar-width: none; }
+.situ::-webkit-scrollbar { display: none; }
+.situ button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px 0 6px; border: 0; border-radius: 999px; background: var(--soft); color: var(--ink); white-space: nowrap; box-shadow: inset 0 0 0 2px var(--soft); }
+.situ button svg { width: 32px; height: 32px; padding: 7px; box-sizing: border-box; border-radius: 999px; background: var(--tint-6); color: var(--tint-6-ink); }
 .situ button:nth-child(1) svg { background: var(--tint-1); color: var(--tint-1-ink); }
 .situ button:nth-child(2) svg { background: var(--tint-2); color: var(--tint-2-ink); }
 .situ button:nth-child(3) svg { background: var(--tint-3); color: var(--tint-3-ink); }
 .situ button:nth-child(4) svg { background: var(--tint-4); color: var(--tint-4-ink); }
 .situ button:nth-child(5) svg { background: var(--tint-5); color: var(--tint-5-ink); }
-.situ button b { font-size: var(--t15); font-weight: 700; line-height: 1.3; padding-right: 16px; }
-.situ button span { font-size: var(--t12); color: var(--muted); line-height: 1.4; }
-.situ button em { font-style: normal; font-size: var(--t13); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.situ button b { font-size: var(--t13); font-weight: 700; }
+.situ button em { font-style: normal; font-size: var(--t12); font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .situ button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--label-soft); }
-.situ button[aria-pressed="true"]::after { content: "✓"; position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: var(--t12); font-weight: 700; }
-.situ button:disabled { background: var(--soft); }
+.situ button:disabled { opacity: .5; }
+/* 영상 결과·가장 잘 맞는 3개: 2열 썸네일 격자(제목은 2줄까지) */
+#list, .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; }
+#list > :not(.cwrap) { grid-column: 1 / -1; }
+#list .card, .tgrid .mini { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 0; border: 0; background: none; }
+#list .cwrap > .card, .tgrid .cwrap > .mini { padding-right: 0; }
+#list .ctitle, .tgrid .ctitle { font-size: var(--t13); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#list .why, .tgrid .why { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+#list .tags { display: none; }  /* 2열 칸에서는 형식 태그 줄을 빼고 제목·채널·고른 이유만 */
+#list .clike, .tgrid .clike { top: 0; right: 0; width: 40px; height: 40px; background: var(--paper); border-radius: 0 8px 0 12px; }
 
 /* 결과 묶음(앞 3개) · 조건 · 목록 */
 .toprow { display: grid; gap: 12px; border-radius: 16px; padding: 16px; background: var(--soft); scroll-margin-top: 64px; }
@@ -198,6 +211,18 @@ details.more > :not(summary) { margin-top: 8px; }
 .listbar .lbrows { display: grid; gap: 12px; padding-block: 8px 12px; }
 .listbar .row { display: grid; gap: 8px; }
 .guidebody { display: grid; gap: 16px; }
+.segs .chipbtn[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 700; }
+#dFeatBox, #dSortBox { display: flex; align-items: center; gap: 8px; }
+#dFeatBox > .lab, #dSortBox > .lab { flex: none; }
+#dFeatBox .chips, #dSortBox .chips { flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding-bottom: 2px; }
+#dSizeBox > div { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
+#dSizeBox .linkbtn { min-height: 32px; font-size: var(--t13); }
+.sgrp { display: grid; gap: 2px; min-width: 0; }
+.sgrp small { font-size: var(--t12); font-weight: 400; color: var(--muted); }
+/* 입력 창: 기록·추가·적기 양식은 화면에 펼쳐 두지 않고 버튼을 누르면 아래에서 올린다(재생 창과 같은 방식) */
+.isheet { position: fixed; inset: 0; z-index: 30; display: grid; align-items: end; justify-items: center; background: var(--scrim); }
+.isheet-inner { width: min(520px, 100%); max-height: 92%; overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 12px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-radius: 16px 16px 0 0; background: var(--paper); box-shadow: var(--shadow); }
+@media (min-width: 600px) { .isheet { align-items: center; } .isheet-inner { border-radius: 16px; } }
 .playopts { display: flex; flex-wrap: wrap; gap: 8px; }
 .picking :is(.card, .mini, .rcard)[data-play] { position: relative; }
 .picking :is(.card, .mini, .rcard)[data-play]::after { content: ""; position: absolute; top: 12px; left: 12px; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 999px; border: 2px solid var(--ink); background: var(--paper); color: var(--ink); font-size: var(--t13); font-weight: 700; }
@@ -504,9 +529,9 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <div class="wgrid" id="workRow" role="group" aria-labelledby="workRowT"></div>
       </div>
 
+      <h2 id="situT" class="situh">지금 어떤 때인가요?</h2>
+      <div class="situ" id="situ" role="group" aria-labelledby="situT"></div>
       <div class="sect">
-        <h2 id="situT">지금 어떤 때인가요?</h2>
-        <div class="situ" id="situ" role="group" aria-labelledby="situT"></div>
         <!-- 언어·길이·좋아해요 조건은 아래 영상 목록 전체(가장 잘 맞는 3개 포함)에 걸리므로 목록보다 먼저 고르게 한다 -->
         <details class="listbar" id="listbar">
           <summary><span class="lab">조건</span><span class="lbnow" id="lbNow"></span><span class="lbgo" aria-hidden="true"></span></summary>
@@ -550,8 +575,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
 
     <!-- 성장: 아이 정보 한 줄 → 기록하기 → 가장 최근 기록 → 그래프·표 → 영유아 건강검진 → 처음 해낸 것 -->
     <div class="view" id="viewGrowth" hidden>
-      <h2 tabindex="-1">우리 아이 성장</h2>
-      <p class="lead">키와 몸무게를 적으면 같은 나이 아이들과 비교해 보여 드려요.</p>
+      <h2 class="sr-only" tabindex="-1">우리 아이 성장</h2>
       <section class="panel" aria-labelledby="gChildT">
         <div class="shead"><h3 id="gChildT">아이 정보</h3><button class="smallbtn" type="button" id="gChildEdit" aria-expanded="false" aria-controls="gChildFields">바꾸기</button></div>
         <p class="hint" id="gChildHint"></p>
@@ -560,20 +584,10 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
           <label for="gBirth">생일<input type="date" id="gBirth"></label>
         </div>
       </section>
-      <section class="panel" aria-labelledby="gRecT">
-        <h3 id="gRecT">키·몸무게 기록하기</h3>
-        <form class="fgrid" id="gForm" novalidate>
-          <label for="gDate">잰 날<input type="date" id="gDate" required></label>
-          <label for="gW">몸무게(kg)<input type="number" id="gW" step="0.01" min="1" max="40" inputmode="decimal" aria-describedby="gErr"></label>
-          <label for="gH">키(cm)<input type="number" id="gH" step="0.1" min="30" max="130" inputmode="decimal" aria-describedby="gErr"></label>
-          <label for="gHC">머리둘레(cm)<input type="number" id="gHC" step="0.1" min="25" max="60" inputmode="decimal" aria-describedby="gErr"></label>
-          <p class="err fill" id="gErr" hidden>몸무게·키·머리둘레 중 하나는 적어 주세요.</p>
-          <button class="primary fill" type="submit">기록하기</button>
-        </form>
-      </section>
       <section class="panel" aria-labelledby="gLastT">
         <h3 id="gLastT">가장 최근 기록</h3>
         <div id="gResult"></div>
+        <button class="primary fill" type="button" data-isheet="gRecSheet">키·몸무게 기록하기</button>
       </section>
       <section class="panel" aria-labelledby="gChartT">
         <h3 id="gChartT">성장 그래프 <small id="gRecCount"></small></h3>
@@ -587,23 +601,37 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <p class="hint">검진에서는 키·몸무게를 재고 발달평가와 상담도 받습니다.</p>
       </section>
       <section class="panel" aria-labelledby="gFirstT">
-        <h3 id="gFirstT">처음 해낸 것</h3>
-        <form class="fgrid" id="gFirstForm">
-          <label for="gFirstDate">날짜<input type="date" id="gFirstDate" required></label>
-          <label for="gFirstText">해낸 것<input type="text" id="gFirstText" placeholder="예: 혼자 걸음, '엄마'라고 말함" required></label>
-          <button class="secondary fill" type="submit">남기기</button>
-        </form>
+        <div class="shead"><h3 id="gFirstT">처음 해낸 것</h3><button class="smallbtn" type="button" data-isheet="gFirstSheet">남기기</button></div>
         <ul class="plist" id="gFirsts"></ul>
       </section>
       <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>기록·기준 출처와 안내</summary><ul class="notes" id="gNotes"></ul></details>
+      <div class="isheet" id="gRecSheet" role="dialog" aria-modal="true" aria-labelledby="gRecT" hidden><div class="isheet-inner">
+        <div class="sheet-head"><h3 id="gRecT">키·몸무게 기록하기</h3><button class="secondary" type="button" data-iclose>닫기</button></div>
+        <form class="fgrid" id="gForm" novalidate>
+          <label for="gDate">잰 날<input type="date" id="gDate" required></label>
+          <label for="gW">몸무게(kg)<input type="number" id="gW" data-first step="0.01" min="1" max="40" inputmode="decimal" aria-describedby="gErr"></label>
+          <label for="gH">키(cm)<input type="number" id="gH" step="0.1" min="30" max="130" inputmode="decimal" aria-describedby="gErr"></label>
+          <label for="gHC">머리둘레(cm)<input type="number" id="gHC" step="0.1" min="25" max="60" inputmode="decimal" aria-describedby="gErr"></label>
+          <p class="err fill" id="gErr" hidden>몸무게·키·머리둘레 중 하나는 적어 주세요.</p>
+          <button class="primary fill" type="submit">기록하기</button>
+        </form>
+      </div></div>
+      <div class="isheet" id="gFirstSheet" role="dialog" aria-modal="true" aria-labelledby="gFirstSheetT" hidden><div class="isheet-inner">
+        <div class="sheet-head"><h3 id="gFirstSheetT">처음 해낸 것 남기기</h3><button class="secondary" type="button" data-iclose>닫기</button></div>
+        <form class="fgrid" id="gFirstForm">
+          <label for="gFirstDate">날짜<input type="date" id="gFirstDate" required></label>
+          <label for="gFirstText">해낸 것<input type="text" id="gFirstText" data-first placeholder="예: 혼자 걸음, '엄마'라고 말함" required></label>
+          <button class="primary fill" type="submit">남기기</button>
+        </form>
+      </div></div>
     </div>
 
     <!-- 고민: 적기 → 적어 둔 고민 → 소아과에 보여 줄 메모 → 물어볼 곳 -->
     <div class="view" id="viewWorry" hidden>
-      <h2 tabindex="-1">육아 고민</h2>
-      <p class="lead">적어 둔 고민은 소아과에 보여 줄 메모로 정리돼요. 이 앱은 답을 지어내지 않습니다.</p>
-      <section class="panel" aria-labelledby="wNewT">
-        <h3 id="wNewT">고민 적기</h3>
+      <h2 class="sr-only" tabindex="-1">육아 고민</h2>
+      <button class="primary fill" type="button" data-isheet="wSheet">고민 적기</button>
+      <div class="isheet" id="wSheet" role="dialog" aria-modal="true" aria-labelledby="wNewT" hidden><div class="isheet-inner">
+        <div class="sheet-head"><h3 id="wNewT">고민 적기</h3><button class="secondary" type="button" data-iclose>닫기</button></div>
         <form class="fcol" id="wForm">
           <label for="wText">무엇이 걱정되나요?<textarea id="wText" required placeholder="예: 밤에 두세 번 깨서 30분씩 울어요"></textarea></label>
           <div class="sect"><span class="lab" id="wCatsT">분류</span><div class="chips" id="wCats" role="group" aria-labelledby="wCatsT"></div></div>
@@ -611,7 +639,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
           <div class="sect"><span class="lab" id="wStatusT">어떻게 할까요?</span><div class="chips" id="wStatus" role="group" aria-labelledby="wStatusT"></div><p class="hint">'소아과에 물어보기'로 적은 고민만 메모에 들어가요.</p></div>
           <button class="primary fill" type="submit">적어 두기</button>
         </form>
-      </section>
+      </div></div>
       <section class="panel" aria-labelledby="wListT">
         <h3 id="wListT">적어 둔 고민 <small id="wCount"></small></h3>
         <div class="chips" id="wFilter" role="group" aria-label="상태로 거르기"></div>
@@ -633,7 +661,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
 
     <!-- 병원·약국: 119 → 지금 갈 수 있는 곳 → 자주 가는 곳 → 예방접종 -->
     <div class="view" id="viewClinic" hidden>
-      <h2 tabindex="-1">병원·약국</h2>
+      <h2 class="sr-only" tabindex="-1">병원·약국</h2>
       <a class="primary fill" href="tel:119"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h3l2 5-2 1.5a11 11 0 0 0 4.5 4.5L15 13l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/></svg>119에 전화하기</a>
       <section class="panel" aria-labelledby="cFindT">
         <h3 id="cFindT">지금 갈 수 있는 곳 <small id="cMode"></small></h3>
@@ -657,10 +685,12 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
       <section class="panel" aria-labelledby="cMineT">
         <h3 id="cMineT">자주 가는 병원·약국 <small id="cNow"></small></h3>
         <ul class="plist" id="cList"></ul>
-        <details class="more" id="cAdd">
-          <summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>자주 가는 곳 추가</summary>
+        <button class="secondary fill" type="button" data-isheet="cAddSheet">자주 가는 곳 추가</button>
+      </section>
+      <div class="isheet" id="cAddSheet" role="dialog" aria-modal="true" aria-labelledby="cAddT" hidden><div class="isheet-inner">
+          <div class="sheet-head"><h3 id="cAddT">자주 가는 곳 추가</h3><button class="secondary" type="button" data-iclose>닫기</button></div>
           <form class="fgrid" id="cForm">
-            <label for="cName">이름<input id="cName" required placeholder="예: 집 앞 소아청소년과"></label>
+            <label for="cName">이름<input id="cName" data-first required placeholder="예: 집 앞 소아청소년과"></label>
             <label for="cKind">종류<select id="cKind"><option>소아청소년과</option><option>약국</option><option>기타</option></select></label>
             <label for="cTel">전화번호<input id="cTel" type="tel" inputmode="tel"></label>
             <label for="cWo">평일 여는 시각<input id="cWo" type="time" value="09:00"></label>
@@ -678,8 +708,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
             </details>
             <button class="primary fill" type="submit">추가하기</button>
           </form>
-        </details>
-      </section>
+      </div></div>
       <section class="panel" aria-labelledby="cVaxT">
         <h3 id="cVaxT">예방접종 <small>2026년 표준 일정</small></h3>
         <div class="next" id="cVaxNext"></div>
@@ -691,19 +720,23 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
 
     <!-- 핫딜: 지금 가격(상품 링크) → 카페 핫딜 확인(최근 1일 검색 바로 열기 · 카페에서 본 가격 확인 · 확인해 둔 가격) → 몰에서 직접 찾기 -->
     <div class="view" id="viewDeals" hidden>
-      <h2 tabindex="-1">기저귀·물티슈 핫딜</h2>
-      <p class="lead">아이에게 맞는 상품을 한 장당 가격이 싼 순서로 보여 드리고, 카페에서 본 핫딜이 정말 싼지 견줘 드려요.</p>
-      <section class="panel" aria-labelledby="dLiveT">
+      <h2 class="sr-only" tabindex="-1">기저귀·물티슈 핫딜</h2>
+      <div class="chips segs" id="dSeg" role="tablist" aria-label="핫딜 구역">
+        <button type="button" class="chipbtn" role="tab" id="dSegLive" data-dseg="live" aria-controls="dPanelLive">지금 가격</button>
+        <button type="button" class="chipbtn" role="tab" id="dSegCafe" data-dseg="cafe" aria-controls="dPanelCafe">카페 핫딜 확인</button>
+        <button type="button" class="chipbtn" role="tab" id="dSegFind" data-dseg="find" aria-controls="dPanelFind">몰에서 직접 찾기</button>
+      </div>
+      <section class="panel" id="dPanelLive" role="tabpanel" aria-labelledby="dLiveT">
         <h3 id="dLiveT">지금 가격 <small id="dLiveAt"></small></h3>
         <div class="chips" id="dLiveKind" role="group" aria-label="품목 고르기"></div>
         <div class="sect" id="dFeatBox"><span class="lab" id="dFeatT">기능</span><div class="chips" id="dFeat" role="group" aria-labelledby="dFeatT"></div></div>
         <div class="sect" id="dSortBox"><span class="lab" id="dSortT">정렬</span><div class="chips" id="dSort" role="group" aria-labelledby="dSortT"></div></div>
-        <div class="notice" id="dSizeBox"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><span id="dSizeHint"></span><button type="button" class="linkbtn" id="dToGrowth" data-gotab="growth" hidden>성장 탭에서 몸무게 적기</button></div></div>
+        <div class="notice" id="dSizeBox"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><span id="dSizeHint"></span><button type="button" class="linkbtn" id="dToGrowth" data-gotab="growth" hidden>몸무게 적기</button></div></div>
         <ul class="plist deal" id="dLive"></ul>
         <p class="hint">몰에 지금 표시된 가격·쿠폰·배송비와 다를 수 있으니, 결제하기 전에 몰에서 확인하세요.</p>
         <div class="btnrow" id="dLiveTgt"></div>
       </section>
-      <section class="panel" aria-labelledby="kCafeT">
+      <section class="panel" id="dPanelCafe" role="tabpanel" aria-labelledby="kCafeT" hidden>
         <h3 id="kCafeT">카페 핫딜 확인</h3>
         <div class="links"><a class="lcard" id="kCafeLink" href="https://search.naver.com/" target="_blank" rel="noopener"><b>네이버 카페에서 최근 1일 핫딜 보기</b><small id="kCafeQ"></small><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"/></svg><span class="sr-only">(새 창)</span></a></div>
         <form class="fcol" id="kForm" novalidate aria-labelledby="kFormT">
@@ -732,7 +765,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
           <div id="dCompare"></div>
         </div>
       </section>
-      <section class="panel" aria-labelledby="dFindT">
+      <section class="panel" id="dPanelFind" role="tabpanel" aria-labelledby="dFindT" hidden>
         <h3 id="dFindT">몰에서 직접 찾기</h3>
         <label class="qlabel" for="dQuery">찾을 상품<input id="dQuery" type="search" placeholder="예: 기저귀 4단계 팬티형"></label>
         <p class="hint" id="dMallsHint"></p>
@@ -994,7 +1027,7 @@ const scrollMem = {};
 const hist = (fn, st) => { try { history[fn](st, ''); return true; } catch (e) { return false; } };
 function show(view, opt = {}) {
   const changed = curView !== view;
-  if (changed) endPick();
+  if (changed) { endPick(); hideISheet(); }
   if (curView && changed) scrollMem[curView] = window.scrollY;
   VIEWS.forEach(id => { $('#' + id).hidden = id !== view; });
   $('#tabs').hidden = view === 'viewProfile';
@@ -1018,6 +1051,7 @@ window.addEventListener('popstate', e => {
   const st = e.state || {};
   depth = st.i || 0;
   if (skipPop) { runAfterPop(); return; }
+  if (iSheet) { hideISheet(); return; }
   if (!$('#sheet').hidden) { hideSheet(); return; }
   route(st.view || 'viewHome', st);
 });
@@ -1082,7 +1116,7 @@ function renderPill() {
   const p = state.profile, label = `${p.example ? '예시 · ' : ''}${monthsOld(p.birth)}개월`;
   $('#btnProfile').innerHTML = `<span class="pt">${esc(label)}</span>${DOWN}`;
   $('#btnProfile').setAttribute('aria-label', `${label}, 아이 정보 바꾸기`);
-  $('#exampleText').textContent = `예시 아이(${profileText()})로 보고 있어요.`;
+  $('#exampleText').textContent = `예시 아이로 보는 중 · ${profileText()}`;
   $('#exampleBar').hidden = !p.example || curView === 'viewProfile';
 }
 function chipToggle(container, values, selected, name) {
@@ -1174,7 +1208,7 @@ function renderHome() {
   else if (n < 24 && !state.limit) state.limit = 2;
   $('#situ').innerHTML = SITUATIONS.map(s => {
     const c = situCount(s);
-    return `<button type="button" data-situ="${s.key}" aria-pressed="${state.situ === s.key}" ${c ? '' : 'disabled'}>${iconOf(s.icon)}<b>${s.name}</b><span>${s.hint}</span><em>${c}개</em></button>`;
+    return `<button type="button" data-situ="${s.key}" aria-pressed="${state.situ === s.key}" ${c ? '' : 'disabled'}>${iconOf(s.icon)}<b>${s.name}</b><span class="sr-only">${s.hint}</span><em>${c}</em></button>`;
   }).join('');
   const works = homeWorks();
   $('#workRow').innerHTML = works.slice(0, 6).map(workTile).join('');
@@ -1352,10 +1386,10 @@ function renderTop(rows) {
   const top = rows.slice(0, 3);
   const count = !top.length ? '' : rows.length > 3 ? ` · 조건에 가장 잘 맞는 ${top.length}개` : ` · 조건에 맞는 영상 ${top.length}개`;
   box.innerHTML = `<div class="toprow-head"><h3>${esc(head)}${count}</h3>${rows.length > 3 ? `<button type="button" class="linkbtn" id="toList">나머지 ${rows.length - 3}개 보기</button>` : ''}</div>` + playOptsHTML('list', rows.length) +
-    (top.length ? top.map(r => {
+    (top.length ? '<div class="tgrid">' + top.map(r => {
       const start = r.q && r.q[0].mark ? ` data-start="${r.q[0].mark.sec}"` : '';
       return `<div class="cwrap"><button type="button" class="mini" data-play="${r.v.id}"${start}>${thumbHTML(r.v)}<span class="cmeta"><span class="ctitle">${esc(r.v.title)}</span><span class="yt">${esc(metaLine(r.v))}</span>${r.why.length ? `<span class="why"><b>고른 이유</b> ${esc(r.why.slice(0, 2).join(' · '))}</span>` : ''}</span></button>${likeBtnHTML(r.v)}</div>`;
-    }).join('') : '<p class="empty2">조건에 맞는 영상이 아직 없어요.</p>');
+    }).join('') + '</div>' : '<p class="empty2">조건에 맞는 영상이 아직 없어요.</p>');
   box.hidden = false;
   return true;
 }
@@ -1579,6 +1613,49 @@ function onEnded() {
   }
   if (state.queue) playNext();
 }
+// 입력 창 열고 닫기. 휴대폰 '뒤로'로 닫히게 브라우저 기록을 하나 쌓고, 닫으면 연 버튼으로 초점을 돌려준다
+let iSheet = null, iOpener = null;
+function openISheet(id, opener) {
+  hideISheet();
+  const el = $('#' + id);
+  if (!el) return;
+  iSheet = el; iOpener = opener || document.activeElement;
+  el.hidden = false;
+  if (hist('pushState', { view: curView, work: state.work, i: depth + 1, isheet: id })) depth += 1;
+  const f = el.querySelector('[data-first]') || el.querySelector('input, textarea, select');
+  if (f) f.focus();
+}
+function hideISheet() {
+  if (!iSheet) return;
+  iSheet.hidden = true; iSheet = null;
+  if (iOpener && iOpener.isConnected) iOpener.focus({ preventScroll: true });
+  iOpener = null;
+}
+function closeISheet() {
+  if (!iSheet) return;
+  hideISheet();
+  if (history.state && history.state.isheet) {
+    skipPop = true; afterPop = null;
+    history.back();
+    setTimeout(() => { if (skipPop) runAfterPop(); }, 400);
+  }
+}
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-isheet]');
+  if (o) { openISheet(o.dataset.isheet, o); return; }
+  if (iSheet && (e.target === iSheet || e.target.closest('[data-iclose]'))) closeISheet();
+});
+// 입력 창이 열린 동안 Tab 초점은 창 안에서만 돌고, Esc로 닫는다
+document.addEventListener('keydown', e => {
+  if (!iSheet) return;
+  if (e.key === 'Escape') { closeISheet(); return; }
+  if (e.key !== 'Tab') return;
+  const fs = [...iSheet.querySelectorAll('button, input, select, textarea, a[href], summary')].filter(x => !x.disabled && x.offsetParent !== null);
+  if (!fs.length) return;
+  const first = fs[0], last = fs[fs.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 // 보는 방법: '몇 편 볼까요?'에서 편수를 정했으면 그 편수만큼 골라서·랜덤으로 틀고, 전체 이어서 보기도 정한 편수를 보면 멈춘다
 function playOptsHTML(src, n, what = '') {
   if (!EMBED || n < 2) return '';
@@ -2015,14 +2092,12 @@ function renderGrowth() {
   if (!$('#gDate').value) $('#gDate').value = isoOf(now);
   $('#gFirstDate').value = $('#gFirstDate').value || isoOf(now);
   // 아이 정보: 성별과 생일을 다 넣었으면 한 줄로 접어 두고 '바꾸기'로 연다
-  const full = !!(child.sex && child.birthDate), open = !full || gChildOpen;
+  const full = !!(child.sex && child.birthDate), open = gChildOpen;
   $('#gChildFields').hidden = !open;
-  $('#gChildEdit').hidden = !full;
   $('#gChildEdit').setAttribute('aria-expanded', open);
   $('#gChildEdit').textContent = open ? '접기' : '바꾸기';
   $('#gChildHint').textContent = [child.sex ? (child.sex === 'F' ? '여아' : '남아') : '', `지금 ${ageText(age)}`, child.birthDate ? `${dotOf(b)} 출생` : ''].filter(Boolean).join(' · ') +
-    (child.birthDate ? '' : ` · 태어난 달(${state.profile.birth})만 알고 있어서 1일에 태어난 것으로 계산합니다. 생일을 넣으면 검진 날짜가 정확해집니다.`) +
-    (child.sex ? '' : ' 성별을 고르면 WHO 기준과 비교해 드립니다.');
+    (full ? '' : ` · ${[child.birthDate ? '' : '생일', child.sex ? '' : '성별'].filter(Boolean).join('·')}을 넣으면 검진 날짜·비교가 정확해져요`);
   // 영유아 건강검진: 지금 기간이거나 다음 차례
   const items = [];
   const cur = CHECKUPS.find(c => c.start(b) <= now && now <= c.end(b));
@@ -2042,7 +2117,7 @@ function renderGrowth() {
     });
     const why = !child.sex ? '성별을 고르면 WHO 기준 백분위를 함께 보여 드립니다.' : !WHO ? 'WHO 성장 기준표를 아직 넣지 않아서 백분위는 비워 두었습니다.' : la > 60 ? '넣어 둔 WHO 기준표가 만 5세(60개월)까지라서 그 뒤 기록은 백분위를 계산하지 않습니다.' : '백분위는 같은 나이 아이 100명을 작은 순서로 세웠을 때 몇 번째쯤인지 나타냅니다. 3·97 선 밖이면 다음 검진 때 의사와 상의해 보세요.';
     $('#gResult').innerHTML = `<p class="src">${esc(dotOf(dateOf(last.date)))}에 잰 기록 · 그때 ${esc(ageText(la))}</p><div class="nums">${cells.join('')}</div><p class="hint">${esc(why)}</p>`;
-  } else $('#gResult').innerHTML = "<p class=\"empty2\">아직 기록이 없어요. 위 '키·몸무게 기록하기'에 적어 주세요.</p>";
+  } else $('#gResult').innerHTML = "<p class=\"empty2\">아직 기록이 없어요. 아래 '키·몸무게 기록하기'로 적으면 같은 나이 아이들과 비교해 보여 드려요.</p>";
   $('#gMeasure').innerHTML = Object.entries(KINDS).map(([kind, k]) => `<button type="button" class="chipbtn" data-gkind="${kind}" aria-pressed="${kind === gKind}">${k.name}</button>`).join('');
   $('#gChart').innerHTML = chartSVG(gKind);
   const shortD = d => dotOf(d).slice(2);
@@ -2082,6 +2157,7 @@ $('#gForm').addEventListener('submit', e => {
   growth.push(r); store.set('growth', growth);
   fields.forEach(id => { $(id).value = ''; $(id).removeAttribute('aria-invalid'); });
   renderGrowth();
+  closeISheet();
   toast('기록했어요.', () => { const i = growth.findIndex(x => x.id === r.id); if (i >= 0) growth.splice(i, 1); store.set('growth', growth); renderGrowth(); });
 });
 $('#gFirstForm').addEventListener('submit', e => {
@@ -2092,6 +2168,7 @@ $('#gFirstForm').addEventListener('submit', e => {
   firsts.push(f); store.set('firsts', firsts);
   $('#gFirstText').value = '';
   renderGrowth();
+  closeISheet();
   toast('남겼어요.', () => { const i = firsts.findIndex(x => x.id === f.id); if (i >= 0) firsts.splice(i, 1); store.set('firsts', firsts); renderGrowth(); });
 });
 $('#viewGrowth').addEventListener('click', e => {
@@ -2105,14 +2182,16 @@ $('#viewGrowth').addEventListener('click', e => {
 const W_CATS = ['잠', '먹기', '말·소통', '배변', '감정·떼쓰기', '놀이·발달', '아픔', '화면 시청', '기타'];
 const W_STATUS = { watch: '조금 더 지켜보기', ask: '소아과에 물어보기', done: '해결됨' };
 const W_LINKS = [
-  { href: 'https://www.childcare.go.kr/?menuno=313', t: '소아청소년과 상담', s: '임신육아종합포털 아이사랑 > 육아 상담' },
-  { href: 'https://www.childcare.go.kr/?menuno=312', t: '육아종합지원센터 육아상담', s: '아이사랑 > 육아 상담' },
-  { href: 'https://www.childcare.go.kr/?menuno=311', t: '인구보건복지협회 육아상담', s: '아이사랑 > 육아 상담' },
-  { href: 'https://www.childcare.go.kr/?menuno=307', t: '모유수유 상담', s: '아이사랑 > 육아 상담' },
-  { href: 'https://www.childcare.go.kr/?menuno=310', t: '자주 하는 질문', s: '아이사랑 > 육아 상담' },
-  { href: 'https://www.childcare.go.kr/?menuno=286', t: '월령별 성장 및 돌보기', s: '아이사랑 > 육아' },
-  { href: 'https://health.kdca.go.kr/healthinfo/index.jsp', t: '국가건강정보포털', s: '질병관리청 건강정보 검색' }
+  { g: 'ask', href: 'https://www.childcare.go.kr/?menuno=313', t: '소아청소년과 상담', s: '임신육아종합포털 아이사랑 > 육아 상담' },
+  { g: 'ask', href: 'https://www.childcare.go.kr/?menuno=312', t: '육아종합지원센터 육아상담', s: '아이사랑 > 육아 상담' },
+  { g: 'ask', href: 'https://www.childcare.go.kr/?menuno=311', t: '인구보건복지협회 육아상담', s: '아이사랑 > 육아 상담' },
+  { g: 'ask', href: 'https://www.childcare.go.kr/?menuno=307', t: '모유수유 상담', s: '아이사랑 > 육아 상담' },
+  { g: 'info', href: 'https://www.childcare.go.kr/?menuno=310', t: '자주 하는 질문', s: '아이사랑 > 육아 상담' },
+  { g: 'info', href: 'https://www.childcare.go.kr/?menuno=286', t: '월령별 성장 및 돌보기', s: '아이사랑 > 육아' },
+  { g: 'info', href: 'https://health.kdca.go.kr/healthinfo/index.jsp', t: '국가건강정보포털', s: '질병관리청 건강정보 검색' }
 ];
+// 물어볼 곳은 묶음으로 접어 두고, 접힌 채로 묶음 이름·곳 수·이름을 보여 준다
+const W_GROUPS = [['ask', '상담 창구'], ['info', '건강·육아 정보']];
 const worries = store.get('worries', []);
 let wCat = W_CATS[0], wFilter = 'all', wNew = 'watch';
 function memoText() {
@@ -2140,7 +2219,11 @@ function renderWorry() {
     <span class="acts"><span class="btnrow">${W_MOVES[w.status].map(([k, n]) => `<button type="button" class="smallbtn" data-wmove="${w.id}" data-to="${k}">${n}</button>`).join('')}</span><button type="button" class="smallbtn" data-wdel="${w.id}">지우기</button></span></li>`).join('')
     : `<li class="empty2">${wFilter === 'all' ? '아직 적은 고민이 없습니다.' : '이 상태인 고민이 없습니다.'}</li>`;
   $('#wMemo').textContent = memoText();
-  $('#wLinks').innerHTML = W_LINKS.map(l => `<a class="lcard" href="${l.href}" target="_blank" rel="noopener"><b>${esc(l.t)}</b><small>${esc(l.s)}</small>${EXT}</a>`).join('');
+  $('#wLinks').innerHTML = W_GROUPS.map(([g, name]) => {
+    const ls = W_LINKS.filter(l => l.g === g);
+    return `<details class="more"><summary>${CHEV}<span class="sgrp"><b>${name} ${ls.length}곳</b><small>${esc(ls.map(l => l.t).join(' · '))}</small></span></summary><div class="links">` +
+      ls.map(l => `<a class="lcard" href="${l.href}" target="_blank" rel="noopener"><b>${esc(l.t)}</b><small>${esc(l.s)}</small>${EXT}</a>`).join('') + '</div></details>';
+  }).join('');
   $('#wNotes').innerHTML = [
     '상담 창구 주소는 임신육아종합포털 아이사랑의 육아 상담 메뉴에서 확인했습니다(2026-10-22).',
     '기록은 이 브라우저에만 저장됩니다.'
@@ -2155,6 +2238,7 @@ $('#wForm').addEventListener('submit', e => {
   $('#wText').value = '';
   if (wFilter !== 'all' && wFilter !== w.status) wFilter = 'all';
   renderWorry();
+  closeISheet();
   toast(w.status === 'ask' ? '적어 두고 소아과 메모에 넣었어요.' : '적어 두었어요.');
 });
 $('#viewWorry').addEventListener('click', e => {
@@ -2227,7 +2311,6 @@ function renderClinic(opening) {
   $('#cLinkHint').hidden = !!SITE;
   $('#cLinkHint').textContent = '이 공개 링크 화면은 지도를 그릴 수 없어, 지도와 가까운 곳 목록은 애보사 앱 주소에서 보여 드립니다.';
   renderVax(new Date());
-  if (opening) $('#cAdd').open = !clinics.length;
   $('#cNotes').innerHTML = [
     SITE ? '병원·약국·응급실 목록과 진료 시간: 국립중앙의료원 공공데이터(매일 새벽에 다시 받음). 응급실은 응급실을 운영하는 종합병원·병원입니다.' : '지도와 가까운 병원·약국 목록은 애보사 앱 주소에서 이 화면 안에 보여 드립니다.',
     '자주 가는 곳이 지금 열었는지는 직접 적은 시간으로 계산합니다. 공휴일·임시 휴진은 반영하지 못하니, 가기 전에 전화로 확인하세요.',
@@ -2246,8 +2329,8 @@ $('#cForm').addEventListener('submit', e => {
   if (!c.name) return;
   clinics.push(c); store.set('clinics', clinics);
   ['#cName', '#cTel', '#cLo', '#cLc', '#cSo', '#cSc', '#cHo', '#cHc'].forEach(id => { $(id).value = ''; });
-  $('#cAdd').open = false;
   renderClinicNow();
+  closeISheet();
   toast(`${josa(c.name, '을', '를')} 추가했어요.`);
 });
 // 예방접종: 지금 맞을 시기·다음 접종·지난 일정 요약 + 가까운 일정 표(전체는 접어 둠)
@@ -2512,7 +2595,7 @@ function renderLive() {
   if (!groups.length) {
     $('#dLiveAt').textContent = '';
     $('#dSizeBox').hidden = true;
-    $('#dLive').innerHTML = "<li class=\"empty2\">아직 확인한 가격이 없습니다. 아래 '몰에서 직접 찾기'로 몰마다 찾아볼 수 있습니다.</li>";
+    $('#dLive').innerHTML = "<li class=\"empty2\">아직 확인한 가격이 없습니다. 위 '몰에서 직접 찾기'에서 몰마다 찾아볼 수 있습니다.</li>";
     return;
   }
   if (!groups.some(g => g.key === dealGroup)) dealGroup = groups[0].key;
@@ -2538,8 +2621,8 @@ function renderLive() {
   $('#dSizeBox').hidden = !isDiaper;
   $('#dToGrowth').hidden = w != null;
   $('#dSizeHint').textContent = !isDiaper ? '' : (w != null || sex)
-    ? `${[w != null ? `최근 몸무게 ${w}kg(${dotOf(dateOf(lw.date))})` : '', sex ? (sex === 'F' ? '여아' : '남아') : ''].filter(Boolean).join('·')}에 맞는 상품 ${fit.length}개를 먼저 보여 드려요. 같은 단계라도 브랜드마다 권장 몸무게가 다릅니다.`
-    : '성장 탭에 몸무게와 성별을 적으면 권장 몸무게가 맞는 기저귀만 먼저 보여 드려요.';
+    ? `${[w != null ? `몸무게 ${w}kg` : '', sex ? (sex === 'F' ? '여아' : '남아') : ''].filter(Boolean).join('·')}에 맞는 상품 ${fit.length}개를 먼저 보여 드려요.`
+    : '몸무게를 적으면 맞는 기저귀부터 보여 드려요.';
   const row = (d, best) => {
     const u = unit(d), hit = target != null && u <= target;
     return `<li><a class="dlink" href="${esc(d.link)}" target="_blank" rel="noopener">
@@ -2649,6 +2732,7 @@ function renderCheck() {
 function renderCompare() {
   const kinds = [...new Set(deals.map(d => d.kind))];
   $('#kSavedN').textContent = deals.length ? `${deals.length}건` : '';
+  if ($('#dSegCafe')) renderSeg();
   $('#dCompare').innerHTML = kinds.length ? kinds.map(kind => {
     const rows = deals.filter(d => d.kind === kind).sort((p, q) => unitOf(p) - unitOf(q));
     const target = dealTargets[kind], base = baseOf(kind);
@@ -2664,13 +2748,24 @@ function renderCompare() {
       }).join('')}</ul></div>`;
   }).join('') : '<p class="empty2">위에서 확인한 가격을 넣어 두면 한 장당 가격이 싼 순서로 모아 보여 드려요.</p>';
 }
+// 핫딜 탭 안 칩: 서로 다른 일 세 가지를 하나씩 보여 준다. 카페 칩에는 확인해 둔 가격 수를 붙인다
+let dSeg = 'live';
+function renderSeg() {
+  [['live', 'Live'], ['cafe', 'Cafe'], ['find', 'Find']].forEach(([k, n]) => {
+    $('#dSeg' + n).setAttribute('aria-selected', dSeg === k);
+    $('#dPanel' + n).hidden = dSeg !== k;
+  });
+  $('#dSegCafe').textContent = '카페 핫딜 확인' + (deals.length ? ` · 확인해 둔 가격 ${deals.length}개` : '');
+}
 function renderDeals() {
+  renderSeg();
   renderLive();
   renderCheck();
   renderCompare();
   renderMalls();
   $('#dNotes').innerHTML = [
     DEALS ? `'지금 가격'은 ${DEALS.checkedAtText}에 ${DEALS.source}에서 직접 확인한 값입니다. 몰에 지금 표시된 가격·쿠폰·배송비와 다를 수 있으니, 결제하기 전에 몰에서 확인하세요.` : "'지금 가격'은 사람이 몰 상품 페이지에서 직접 확인해 적습니다. 쇼핑몰 화면을 자동으로 모으지는 않습니다.",
+    "기저귀는 성장 탭의 최근 몸무게·성별에 권장 몸무게가 맞는 상품을 먼저 보여 줍니다. 같은 단계라도 브랜드마다 권장 몸무게가 다릅니다.",
     '한 장당 가격은 결제액(상품 가격 + 배송비)을 전체 매수로 나눈 값입니다. 매수는 판매 목록에 적힌 매수와 팩 수로 셌습니다.',
     "상품 아래 '평점'은 다나와 쇼핑몰 리뷰(다나와가 여러 몰의 리뷰를 모아 보여 주는 곳)의 평점과 리뷰 수를 그대로 옮긴 값입니다. '리뷰에서 나온 말'은 그 리뷰를 최신순으로 50건까지 읽고 평가 요소별로 좋았다·아쉬웠다는 말을 센 건수입니다. 같은 글이 여러 번 올라온 것은 한 번만, 리뷰 한 건이 여러 요소를 말하면 요소마다 셉니다. '지금 가격'을 다시 확인할 때마다 리뷰도 다시 세며, 아직 다시 세지 않은 상품은 보여 주지 않습니다.",
     ...(DEALS && DEALS.notes ? DEALS.notes : []),
@@ -2721,6 +2816,8 @@ $('#kForm').addEventListener('submit', e => {
   toast('확인해 둔 가격에 넣었어요.', () => { const i = deals.findIndex(x => x.id === d.id); if (i >= 0) deals.splice(i, 1); store.set('deals', deals); renderCompare(); });
 });
 $('#viewDeals').addEventListener('click', e => {
+  const sg = e.target.closest('[data-dseg]');
+  if (sg) { dSeg = sg.dataset.dseg; renderSeg(); return; }
   const go = e.target.closest('[data-gotab]');
   if (go) { openTab(go.dataset.gotab, { replace: true }); return; }
   const kk = e.target.closest('[data-kkind]');
