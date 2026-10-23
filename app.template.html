@@ -171,8 +171,15 @@ details.more > :not(summary) { margin-top: 8px; }
 .toprow { display: grid; gap: 12px; border-radius: 16px; padding: 16px; background: var(--soft); scroll-margin-top: 64px; }
 .toprow-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .toprow-head h3 { font-size: var(--t17); }
-.listbar { display: grid; gap: 12px; border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.listbar { border: 1px solid var(--line); border-radius: 16px; padding: 4px 16px; }
+.listbar > summary { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; font-size: var(--t13); }
+.listbar > summary::-webkit-details-marker { display: none; }
+.listbar .lbnow { flex: 1; min-width: 0; font-weight: 600; color: var(--ink); }
+.listbar .lbgo::after { content: "바꾸기"; font-size: var(--t12); font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.listbar[open] .lbgo::after { content: "접기"; }
+.listbar .lbrows { display: grid; gap: 12px; padding-block: 8px 12px; }
 .listbar .row { display: grid; gap: 8px; }
+.guidebody { display: grid; gap: 16px; }
 .relaxed { display: flex; gap: 8px; align-items: start; font-size: var(--t13); color: var(--ink); background: var(--label-soft); border-radius: 12px; padding: 12px 16px; }
 .reshead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; scroll-margin-top: 64px; }
 .reshead small { color: var(--muted); font-size: var(--t12); font-variant-numeric: tabular-nums; }
@@ -471,11 +478,14 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <h2 id="situT">지금 어떤 때인가요?</h2>
         <div class="situ" id="situ" role="group" aria-labelledby="situT"></div>
         <!-- 언어·길이·좋아해요 조건은 아래 영상 목록 전체(가장 잘 맞는 3개 포함)에 걸리므로 목록보다 먼저 고르게 한다 -->
-        <section class="listbar" aria-label="조건 더 고르기">
-          <div class="row"><span class="lab" id="langLab">영상 언어</span><div class="chips" id="langChips" role="group" aria-labelledby="langLab"></div></div>
-          <div class="row"><span class="lab" id="lenLab">길이</span><div class="chips" id="lenChips" role="group" aria-labelledby="lenLab"></div></div>
-          <div class="row"><span class="lab" id="likeLab">좋아해요</span><div class="chips" id="likeChips" role="group" aria-labelledby="likeLab"></div></div>
-        </section>
+        <details class="listbar" id="listbar">
+          <summary><span class="lab">조건</span><span class="lbnow" id="lbNow"></span><span class="lbgo" aria-hidden="true"></span></summary>
+          <div class="lbrows">
+            <div class="row"><span class="lab" id="langLab">영상 언어</span><div class="chips" id="langChips" role="group" aria-labelledby="langLab"></div></div>
+            <div class="row"><span class="lab" id="lenLab">길이</span><div class="chips" id="lenChips" role="group" aria-labelledby="lenLab"></div></div>
+            <div class="row"><span class="lab" id="likeLab">좋아해요</span><div class="chips" id="likeChips" role="group" aria-labelledby="likeLab"></div></div>
+          </div>
+        </details>
         <div class="relaxed" id="relaxed" hidden></div>
       </div>
       <div class="toprow" id="situTop" hidden></div>
@@ -554,7 +564,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         </form>
         <ul class="plist" id="gFirsts"></ul>
       </section>
-      <ul class="notes" id="gNotes"></ul>
+      <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>기록·기준 출처와 안내</summary><ul class="notes" id="gNotes"></ul></details>
     </div>
 
     <!-- 고민: 적기 → 적어 둔 고민 → 소아과에 보여 줄 메모 → 물어볼 곳 -->
@@ -586,7 +596,8 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <h3 id="wLinksT">지금 물어볼 수 있는 곳</h3>
         <div class="links" id="wLinks"></div>
       </section>
-      <ul class="notes" id="wNotes"></ul>
+      <p class="hint">이 앱은 고민에 직접 답하지 않습니다. 의학적 판단이 필요한 내용은 소아과에서 확인하세요.</p>
+      <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>출처와 안내</summary><ul class="notes" id="wNotes"></ul></details>
     </div>
 
     <!-- 병원·약국: 119 → 지금 갈 수 있는 곳 → 자주 가는 곳 → 예방접종 -->
@@ -641,10 +652,10 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
       <section class="panel" aria-labelledby="cVaxT">
         <h3 id="cVaxT">예방접종 <small>2026년 표준 일정</small></h3>
         <div class="next" id="cVaxNext"></div>
-        <div class="tblwrap" id="cVax"></div>
+        <details class="more" id="cVaxNear"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>앞뒤 일정과 '맞았어요' 표시 <span id="cVaxNearN"></span></summary><div class="tblwrap" id="cVax"></div></details>
         <details class="more"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>만 6세까지 전체 일정 보기</summary><div class="tblwrap" id="cVaxAll"></div></details>
       </section>
-      <ul class="notes" id="cNotes"></ul>
+      <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>자료 출처와 안내</summary><ul class="notes" id="cNotes"></ul></details>
     </div>
 
     <!-- 핫딜: 지금 가격(상품 링크) → 카페 핫딜 확인(최근 1일 검색 바로 열기 · 카페에서 본 가격 확인 · 확인해 둔 가격) → 몰에서 직접 찾기 -->
@@ -658,6 +669,7 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <div class="sect" id="dSortBox"><span class="lab" id="dSortT">정렬</span><div class="chips" id="dSort" role="group" aria-labelledby="dSortT"></div></div>
         <div class="notice" id="dSizeBox"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><span id="dSizeHint"></span><button type="button" class="linkbtn" id="dToGrowth" data-gotab="growth" hidden>성장 탭에서 몸무게 적기</button></div></div>
         <ul class="plist deal" id="dLive"></ul>
+        <p class="hint">몰에 지금 표시된 가격·쿠폰·배송비와 다를 수 있으니, 결제하기 전에 몰에서 확인하세요.</p>
         <div class="btnrow" id="dLiveTgt"></div>
       </section>
       <section class="panel" aria-labelledby="kCafeT">
@@ -695,12 +707,14 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <p class="hint" id="dMallsHint"></p>
         <div class="chips" id="dMalls"></div>
       </section>
-      <ul class="notes" id="dNotes"></ul>
+      <details class="more notesfold"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>가격·리뷰 기준과 안내</summary><ul class="notes" id="dNotes"></ul></details>
     </div>
   </section>
 
   <aside class="guide" aria-label="샘플 안내">
-    <h2>샘플 안내</h2>
+    <details class="more guidefold" id="guideFold">
+    <summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>샘플 안내·이 샘플의 데이터</summary>
+    <div class="guidebody">
     <p>영상 탭은 PR/FAQ 부록 B의 탐색 흐름을 옮긴 화면입니다. 영상 탭을 쓰면 지금 어느 단계인지 아래에 표시됩니다. 성장·고민·병원·약국·핫딜 탭은 처음 아이디어에서 넓힌 화면입니다.</p>
     <ol class="steps" id="steps">
       <li data-step="1"><div><b>동의</b><span>개인정보 처리방침·유튜브 약관·보호자 동의</span></div></li>
@@ -714,6 +728,8 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
     <div class="metric" id="metricBox"></div>
     <h3>이 샘플의 데이터</h3>
     <ul id="dataNotes"></ul>
+    </div>
+    </details>
     <p class="foot">영상 제공: YouTube · <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube 서비스 약관</a> · <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a></p>
   </aside>
 
@@ -859,6 +875,7 @@ const byId = Object.fromEntries(CATALOG.map(v => [v.id, v]));
 // 썸네일을 못 불러오면(공개 링크 화면 등) 작품 이름 칸만 남긴다
 document.addEventListener('error', e => { if (e.target.tagName === 'IMG' && e.target.closest('.thumb')) e.target.remove(); }, true);
 // 선 아이콘(정책 9절): 펼치기 · 아래 화살표 · 새 창
+const LIST_STEP = 10;  // 영상 결과 목록을 한 번에 보여 주는 편수(휴대폰에서 목록이 너무 길어지지 않게). 전체는 '이어서 보기'로 틀 수 있다
 const CHEV = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>';
 const DOWN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>';
 const EXT = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"/></svg><span class="sr-only">(새 창)</span>';
@@ -870,7 +887,7 @@ const state = {
   likes: new Set(store.get('likes', [])),
   history: store.get('history', []),
   marks: store.get('marks', {}),
-  shown: 20, reached: new Set([3]), current: null,
+  shown: LIST_STEP, reached: new Set([3]), current: null,
   watched: 0, lastPlayAt: 0, work: null,
   // 좋아해요: 작품별 전체 목록에서 누른 영상도 첫 화면에 보이도록 누를 때의 정보를 함께 저장한다
   likeInfo: store.get('likeInfo', {}), likedOnly: false, queue: null, lastRows: []
@@ -926,6 +943,8 @@ function showMetric() {
   $('#metricBox').innerHTML = rows.map(([k, v]) => `<span>${esc(k)}</span><span class="v">${esc(v)}</span>`).join('');
 }
 
+// 넓은 화면(980px 이상)은 샘플 안내가 앱 옆 칸에 있어 스크롤을 늘리지 않으므로 펼쳐 둔다
+if (window.matchMedia && matchMedia('(min-width: 980px)').matches) $('#guideFold').open = true;
 function setStep(n) {
   for (let i = 1; i <= n; i++) state.reached.add(i);
   document.querySelectorAll('#steps li').forEach(li => {
@@ -1151,6 +1170,8 @@ function renderChips() {
   $('#lenChips').innerHTML = LENS.map(l => `<button type="button" class="chipbtn" data-len="${l.key}" aria-pressed="${state.len === l.key}">${l.name}</button>`).join('');
   const nLiked = likedIds().filter(id => passAll(byId[id])).length;
   $('#likeChips').innerHTML = `<button type="button" class="chipbtn" data-likedonly="1" data-multi aria-pressed="${state.likedOnly}">좋아해요만 ${nLiked}</button>`;
+  const lenName = state.len ? (LENS.find(l => l.key === state.len) || {}).name : '길이 전체';
+  $('#lbNow').textContent = [(LANGS.find(l => l.key === state.profile.lang) || {}).name, lenName, state.likedOnly ? '좋아해요만' : ''].filter(Boolean).join(' · ');
 }
 function matchQuery(v, q) {
   const qq = q.replace(/\s/g, '');
@@ -1328,13 +1349,13 @@ function renderList() {
     return;
   }
   if (!rest.length) { list.innerHTML = `<p class="empty2">위 ${rows.length}개가 조건에 맞는 영상 전부예요.</p>`; return; }
-  list.innerHTML = shown.map(r => cardHTML(r, common)).join('') + (rest.length > state.shown ? `<button type="button" class="secondary fill" id="moreBtn">${rest.length - state.shown}개 더 보기</button>` : '');
+  list.innerHTML = shown.map(r => cardHTML(r, common)).join('') + (rest.length > state.shown ? `<button type="button" class="secondary fill" id="moreBtn">${Math.min(LIST_STEP, rest.length - state.shown)}개 더 보기 · 남은 ${rest.length - state.shown}개</button>` : '');
 }
 $('#viewHome').addEventListener('click', e => {
   const situ = e.target.closest('[data-situ]');
   if (situ) {
     // 같은 버튼을 다시 눌러도 끄지 않는다(다른 조건은 '전체 영상' 버튼으로)
-    if (state.situ !== situ.dataset.situ) { state.situ = situ.dataset.situ; state.query = ''; $('#askInput').value = ''; state.shown = 20; }
+    if (state.situ !== situ.dataset.situ) { state.situ = situ.dataset.situ; state.query = ''; $('#askInput').value = ''; state.shown = LIST_STEP; }
     document.querySelectorAll('#situ button').forEach(b => b.setAttribute('aria-pressed', b.dataset.situ === state.situ));
     renderList(); setStep(4);
     showTop();
@@ -1342,16 +1363,16 @@ $('#viewHome').addEventListener('click', e => {
   }
   if (e.target.closest('#toList')) { $('.reshead').scrollIntoView({ block: 'start' }); $('#resTitle').focus({ preventScroll: true }); return; }
   const lg = e.target.closest('[data-lang]');
-  if (lg) { state.profile.lang = lg.dataset.lang; store.set('profile', state.profile); state.shown = 20; keepFocus(renderHome); setStep(4); return; }
+  if (lg) { state.profile.lang = lg.dataset.lang; store.set('profile', state.profile); state.shown = LIST_STEP; keepFocus(renderHome); setStep(4); return; }
   const lim = e.target.closest('[data-limit]');
   if (lim) { state.limit = Number(lim.dataset.limit); store.set('limit', state.limit); state.watched = 0; keepFocus(renderLimit); return; }
   const len = e.target.closest('[data-len]');
-  if (len) { state.len = state.len === len.dataset.len ? null : len.dataset.len; state.shown = 20; keepFocus(() => { renderChips(); renderList(); }); setStep(4); return; }
+  if (len) { state.len = state.len === len.dataset.len ? null : len.dataset.len; state.shown = LIST_STEP; keepFocus(() => { renderChips(); renderList(); }); setStep(4); return; }
   const w = e.target.closest('[data-gowork]');
   if (w) { openWork(w.dataset.gowork); return; }
   if (e.target.closest('#moreBtn')) {
     const from = state.shown;
-    state.shown += 20; renderList();
+    state.shown += LIST_STEP; renderList();
     const next = $('#list').querySelectorAll('.card')[from];
     if (next) next.focus({ preventScroll: true });
     return;
@@ -1359,7 +1380,7 @@ $('#viewHome').addEventListener('click', e => {
   const card = e.target.closest('[data-play]');
   if (card) openPlayer(card.dataset.play, Number(card.dataset.start || 0), card);
 });
-$('#askForm').addEventListener('submit', e => { e.preventDefault(); state.query = $('#askInput').value.trim(); state.shown = 20; renderList(); setStep(4); if (state.query) showTop(); });
+$('#askForm').addEventListener('submit', e => { e.preventDefault(); state.query = $('#askInput').value.trim(); state.shown = LIST_STEP; renderList(); setStep(4); if (state.query) showTop(); });
 $('#askInput').addEventListener('search', () => { if (!$('#askInput').value) { state.query = ''; renderList(); } });
 
 /* ---------- 작품 화면: 시즌·회차 ---------- */
@@ -1715,7 +1736,7 @@ document.addEventListener('click', e => {
     if (curView === 'viewWork' && state.workLikedOnly) keepFocus(() => openWork(state.work, null, { more: true }));
     return;
   }
-  if (e.target.closest('[data-likedonly]')) { state.likedOnly = !state.likedOnly; state.shown = 20; keepFocus(() => { renderChips(); renderList(); }); return; }
+  if (e.target.closest('[data-likedonly]')) { state.likedOnly = !state.likedOnly; state.shown = LIST_STEP; keepFocus(() => { renderChips(); renderList(); }); return; }
   const qb = e.target.closest('[data-queue]');
   if (qb) {
     const src = qb.dataset.queue;
@@ -2024,7 +2045,6 @@ function renderWorry() {
   $('#wMemo').textContent = memoText();
   $('#wLinks').innerHTML = W_LINKS.map(l => `<a class="lcard" href="${l.href}" target="_blank" rel="noopener"><b>${esc(l.t)}</b><small>${esc(l.s)}</small>${EXT}</a>`).join('');
   $('#wNotes').innerHTML = [
-    '이 앱은 고민에 직접 답하지 않습니다. 의학적 판단이 필요한 내용은 소아과에서 확인하세요.',
     '상담 창구 주소는 임신육아종합포털 아이사랑의 육아 상담 메뉴에서 확인했습니다(2026-10-22).',
     '기록은 이 브라우저에만 저장됩니다.'
   ].map(t => `<li>${esc(t)}</li>`).join('');
@@ -2146,6 +2166,8 @@ function renderVax(now) {
   $('#cVaxNext').innerHTML = items.map(i => `<div class="item"><b>${esc(i.b)}${i.badge}</b><span>${esc(i.s)}</span>${i.btn || ''}</div>`).join('') || '<p class="empty2">만 6세까지의 표준 예방접종 일정이 끝났습니다.</p>';
   const near = VAX.filter(v => v.to + 1 >= age - 6 && v.from <= age + 12);
   $('#cVax').innerHTML = near.length ? vaxRows(near, age) : '';
+  $('#cVaxNear').hidden = !near.length;
+  $('#cVaxNearN').textContent = `${near.length}건`;
   $('#cVaxAll').innerHTML = vaxRows(VAX, age);
 }
 $('#viewClinic').addEventListener('click', e => {
@@ -2386,6 +2408,7 @@ const latestW = () => [...growth].filter(r => r.w).sort((p, q) => p.date.localeC
 // 한 장 가격(배송비 포함) · 아이 몸무게·성별에 맞는 상품인지(몸무게·성별을 모르면 맞는 것으로 본다)
 const sheetPrice = d => (d.price + (d.ship || 0)) / d.sheets;
 const fitsChild = (d, w, sex) => (!d.kg || w == null || (d.kg[0] <= w && w <= d.kg[1])) && (!d.sex || !sex || d.sex === sex);
+const DEAL_FIRST = 5;  // 핫딜 '지금 가격'에서 처음 보여 주는 상품 수(나머지는 펼쳐 본다)
 function renderLive() {
   const groups = (DEALS && DEALS.groups) || [];
   $('#dLiveKind').hidden = $('#dLiveTgt').hidden = $('#dFeatBox').hidden = $('#dSortBox').hidden = !groups.length;
@@ -2430,7 +2453,8 @@ function renderLive() {
   };
   const bestFirst = sortKey === 'unit';
   $('#dLive').innerHTML = (!all.length ? '<li class="empty2">고른 기능을 모두 갖춘 상품이 없어요. <button type="button" class="linkbtn" data-dfclear="1">기능 선택 지우기</button></li>'
-    : fit.map((d, i) => row(d, bestFirst && i === 0)).join('') || '<li class="empty2">아이 몸무게에 맞는 상품을 아직 확인하지 못했습니다.</li>') +
+    : fit.slice(0, DEAL_FIRST).map((d, i) => row(d, bestFirst && i === 0)).join('') || '<li class="empty2">아이 몸무게에 맞는 상품을 아직 확인하지 못했습니다.</li>') +
+    (fit.length > DEAL_FIRST ? `<li class="others"><details class="more"><summary>${CHEV}나머지 ${fit.length - DEAL_FIRST}개 더 보기</summary><ul class="plist deal">${fit.slice(DEAL_FIRST).map(d => row(d, false)).join('')}</ul></details></li>` : '') +
     (rest.length ? `<li class="others"><details class="more"><summary>${CHEV}${isDiaper ? '몸무게·성별이 맞지 않는 상품' : '그 밖의 상품'} ${rest.length}개</summary><ul class="plist deal">${rest.map(d => row(d, false)).join('')}</ul></details></li>` : '');
 }
 function renderMalls() {
