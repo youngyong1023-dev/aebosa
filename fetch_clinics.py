@@ -29,7 +29,9 @@ ROWS = 1000
 OPS = {
     'peds': ('HsptlAsembySearchService/getHsptlMdcncListInfoInqire', {'QD': 'D002'}),  # 병·의원 목록, 진료과목 D002(소아청소년과)
     'pharm': ('ErmctInsttInfoInqireService/getParmacyListInfoInqire', {}),            # 약국 목록
-    'moon': ('HsptlAsembySearchService/getBabyListInfoInqire', {}),                    # 달빛어린이병원 및 소아전문센터 목록(이름 확인 필요)
+    'moon': ('HsptlAsembySearchService/getBabyListInfoInqire', {}),                    # 달빛어린이병원 및 소아전문센터 목록
+    'erA': ('HsptlAsembySearchService/getHsptlMdcncListInfoInqire', {'QZ': 'A'}),       # 종합병원 전체(응급실 운영 여부 dutyEryn)
+    'erB': ('HsptlAsembySearchService/getHsptlMdcncListInfoInqire', {'QZ': 'B'}),       # 병원 전체
 }
 
 
@@ -156,6 +158,7 @@ def main():
             continue
         r = norm(it, kind_of(it))
         if r and r['id']:
+            r['pd'] = 1  # 진료과목에 소아청소년과가 있는 곳(D002). 응급실·달빛 목록으로만 들어온 병원과 가른다
             rows[r['id']] = r
     for it in got['pharm']:
         r = norm(it, 'p')
@@ -178,6 +181,20 @@ def main():
     except Exception as e:  # 오퍼레이션 이름이 다르면 여기서 건너뛴다
         moon_ok = False
         print('달빛어린이병원 목록을 받지 못했습니다:', e)
+    er_ok = True
+    try:  # 응급실: 종합병원·병원 중 응급실 운영(dutyEryn=1)인 곳. 앱 안 '응급실' 목록에 쓴다
+        for name in ('erA', 'erB'):
+            for it in fetch_all(name, key):
+                if it.get('dutyEryn') != '1':
+                    continue
+                r = norm(it, kind_of(it))
+                if r and r['id']:
+                    old = rows.setdefault(r['id'], r)
+                    old['er'] = 1
+                    old['ec'] = it.get('dutyEmclsName', '')
+    except Exception as e:
+        er_ok = False
+        print('응급실 목록을 받지 못했습니다:', e)
     if not rows:
         sys.exit('받은 자료가 없습니다. 활용신청 승인 상태와 인증키를 확인해 주세요.')
     cells = {}
@@ -192,12 +209,13 @@ def main():
     counts = {k: sum(r['k'] == k for r in rows.values()) for k in ('c', 'h', 'b', 'p')}
     counts['m'] = sum(bool(r.get('m')) for r in rows.values())
     counts['ps'] = sum(bool(r.get('ps')) for r in rows.values())
+    counts['er'] = sum(bool(r.get('er')) for r in rows.values())
     meta = {'updatedAt': now.isoformat(timespec='minutes'), 'updatedText': f'{now.month}월 {now.day}일 {now:%H:%M}',
             'source': '국립중앙의료원 전국 병·의원 찾기 서비스·전국 약국 정보 조회 서비스(공공데이터포털)',
-            'cell': 0.1, 'cells': len(cells), 'counts': counts, 'moonList': moon_ok}
+            'cell': 0.1, 'cells': len(cells), 'counts': counts, 'moonList': moon_ok, 'erList': er_ok}
     (OUT / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False), encoding='utf-8')
     print(f'칸 {len(cells)}개 · 소아청소년과 진료 의원 {counts["c"]} · 병원 {counts["h"]} · 보건소 {counts["b"]} · 이름에 소아 {counts["ps"]}'
-          f' · 약국 {counts["p"]} · 달빛어린이병원·소아전문센터 {counts["m"]}')
+          f' · 약국 {counts["p"]} · 달빛어린이병원·소아전문센터 {counts["m"]} · 응급실 {counts["er"]}')
 
 
 if __name__ == '__main__':

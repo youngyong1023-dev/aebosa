@@ -253,6 +253,11 @@ input[aria-invalid="true"] { border-color: var(--warn); }
 .mapcard b { font-size: var(--t15); font-weight: 600; }
 .mapcard small { font-size: var(--t12); color: var(--muted); }
 .mapcard .chipbtn.go { background: var(--paper); border-color: var(--line); }
+.locq { display: flex; gap: 8px; }
+.locq input { flex: 1; min-width: 0; }
+.hrs { width: 100%; border-collapse: collapse; font-size: var(--t13); font-variant-numeric: tabular-nums; }
+.hrs th, .hrs td { text-align: left; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); font-weight: 400; }
+.hrs tr.today th, .hrs tr.today td { font-weight: 700; }
 .cmap { width: 100%; height: 280px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--soft); }
 .pin { display: grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border: 2px solid var(--paper); border-radius: 999px; background: var(--ink); color: var(--paper); font-size: var(--t12); font-weight: 700; white-space: nowrap; }
 .pin.ok { background: var(--ok); }
@@ -548,7 +553,8 @@ details.rv > summary { min-height: 36px; font-size: var(--t12); font-weight: 600
         <h3 id="cFindT">지금 갈 수 있는 곳 <small id="cMode"></small></h3>
         <div class="sect" id="cNearBox" hidden>
           <button class="primary fill" type="button" id="cLocate"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span id="cLocateT">내 위치로 가까운 곳 보기</span></button>
-          <p class="hint" id="cLocHint">위치는 이 버튼을 누를 때만, 이 기기 안에서 거리를 재는 데 씁니다. 저장하거나 보내지 않습니다.</p>
+          <form class="locq" id="cPlaceForm" hidden><label class="sr-only" for="cPlace">동네·역 이름</label><input id="cPlace" placeholder="예: 망원동, 강남역" autocomplete="off" enterkeyhint="search"><button class="secondary" type="submit">동네로 찾기</button></form>
+          <p class="hint" id="cLocHint">위치는 이 버튼을 누를 때만, 이 기기 안에서 거리를 재는 데 씁니다. 저장하거나 보내지 않습니다. 위치를 쓰지 않으려면 동네나 역 이름으로 찾으세요.</p>
           <div class="fcol" id="cNearUi" hidden>
             <div class="chips" id="cKinds" role="group" aria-label="찾을 곳"></div>
             <div class="cmap" id="cMap" role="region" aria-label="가까운 병원·약국 지도" hidden></div>
@@ -1802,30 +1808,14 @@ $('#wCopy').addEventListener('click', () => {
   try { navigator.clipboard.writeText(text).then(() => { $('#wCopyHint').textContent = ''; toast('메모를 복사했어요.'); }, fallback); } catch (err) { fallback(); }
 });
 
-/* ---------- 병원·약국: 공식 조회, 자주 가는 곳 진료 시간, 예방접종 ---------- */
-// 지금 갈 수 있는 곳: 시각에 따라 순서를 바꾼다. 지도 링크는 지도 앱이 현재 위치로 찾고, 이 앱은 위치를 받지 않는다
-const MAPS = [['카카오맵', q => `https://map.kakao.com/link/search/${encodeURIComponent(q)}`], ['네이버 지도', q => `https://map.naver.com/p/search/${encodeURIComponent(q)}`]];
-const NEAR = {
-  peds: { t: '가까운 소아청소년과', s: '지도 앱이 지금 위치에서 찾아 진료 시간과 함께 보여 줍니다', q: '소아청소년과' },
-  pharm: { t: '가까운 약국', s: '지도 앱이 지금 위치에서 찾습니다', q: '약국' },
-  moon: { t: '달빛어린이병원', s: '밤과 휴일에도 아이를 진료하는 병원 · 응급의료포털', href: 'https://www.e-gen.or.kr/moonlight/main.do' },
-  nightPharm: { t: '지금 문 연 약국', s: '운영 시간 조회 · 응급의료포털', href: 'https://www.e-gen.or.kr/egen/search_pharmacy.do' },
-  er: { t: '응급실', s: '응급의료포털', href: 'https://www.e-gen.or.kr/egen/search_emergency_room.do' },
-  hosp: { t: '문 연 병원 찾기', s: '진료 시간 조회 · 응급의료포털', href: 'https://www.e-gen.or.kr/egen/search_hospital.do' },
-  pharm114: { t: '약국 찾기(pharm114)', s: "아이사랑 '약국찾기'가 연결하는 사이트", href: 'https://www.pharm114.or.kr/' }
-};
+/* ---------- 병원·약국: 가까운 곳(앱 안 지도·목록), 자주 가는 곳 진료 시간, 예방접종 ---------- */
 // 평일 9~18시, 토요일 9~13시를 낮으로 본다(공휴일은 구분하지 못한다)
 const isDaytime = now => { const d = now.getDay(), m = now.getHours() * 60 + now.getMinutes(); return (d >= 1 && d <= 5 && m >= 540 && m < 1080) || (d === 6 && m >= 540 && m < 780); };
-const nearCard = k => { const x = NEAR[k]; return x.href ? `<a class="lcard" href="${x.href}" target="_blank" rel="noopener"><b>${esc(x.t)}</b><small>${esc(x.s)}</small>${EXT}</a>`
-  : `<div class="mapcard"><b>${esc(x.t)}</b><small>${esc(x.s)}</small><div class="chips">${MAPS.map(([n, u]) => `<a class="chipbtn go" href="${u(x.q)}" target="_blank" rel="noopener">${esc(n)}${EXT}</a>`).join('')}</div></div>`; };
-let nearMode = null;
-function renderNear(now) {
-  const day = isDaytime(now);
-  if (nearMode === day) return;
-  nearMode = day;
-  $('#cMode').textContent = day ? '평일 낮 순서' : '밤·휴일 순서';
-  $('#cLinks').innerHTML = (day ? ['peds', 'pharm', 'moon', 'er'] : ['moon', 'nightPharm', 'er', 'peds']).map(nearCard).join('');
-  $('#cMoreLinks').innerHTML = (day ? ['hosp', 'nightPharm', 'pharm114'] : ['hosp', 'pharm', 'pharm114']).map(nearCard).join('');
+// 자체 주소 판은 찾기·고르기·진료 시간·지도를 앱 안에서 끝내므로 바깥 지도 앱·포털 링크를 두지 않는다(길찾기만 마지막 한 단계로 카카오맵).
+// Claude 공개 링크는 지도를 그릴 수 없어 앱 주소로 가는 카드 하나만 둔다
+const APP_URL = 'https://youngyong1023-dev.github.io/aebosa/';
+function renderNear() {
+  $('#cLinks').innerHTML = SITE ? '' : `<a class="lcard" href="${APP_URL}" target="_blank" rel="noopener"><b>가까운 병원·약국·응급실 지도</b><small>애보사 앱 주소에서 지도와 목록을 이 화면 안에서 봅니다</small>${EXT}</a>`;
 }
 const clinics = store.get('clinics', []);
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -1859,15 +1849,18 @@ function renderClinicNow() {
     : '<li class="empty2">자주 가는 소아과·약국의 여는 시간을 적어 두면, 지금 문을 열었는지 여기서 바로 보여 드려요.</li>';
 }
 function renderClinic(opening) {
-  nearMode = null;
   renderClinicNow();
   $('#cNearBox').hidden = !SITE;
-  $('#cLinkHead').hidden = !SITE;
-  $('#cLinkHint').textContent = SITE ? '지도 앱 링크를 누르면 카카오맵이나 네이버 지도가 휴대폰의 현재 위치로 찾습니다.' : '지도 링크를 누르면 카카오맵이나 네이버 지도가 휴대폰의 현재 위치에서 가까운 곳을 찾습니다. 이 화면은 위치를 받지 않습니다.';
+  $('#cLinkHead').hidden = true;
+  $('#cMore').hidden = true;
+  $('#cLinks').hidden = !!SITE;
+  $('#cPlaceForm').hidden = !(SITE && SITE.mapKey);
+  $('#cLinkHint').hidden = !!SITE;
+  $('#cLinkHint').textContent = '이 공개 링크 화면은 지도를 그릴 수 없어, 지도와 가까운 곳 목록은 애보사 앱 주소에서 보여 드립니다.';
   renderVax(new Date());
   if (opening) $('#cAdd').open = !clinics.length;
   $('#cNotes').innerHTML = [
-    "조회 링크는 응급의료포털(e-gen.or.kr) 첫 화면과 아이사랑의 '약국찾기' 메뉴에서 확인한 주소입니다(2026-10-22).",
+    SITE ? '병원·약국·응급실 목록과 진료 시간: 국립중앙의료원 공공데이터(매일 새벽에 다시 받음). 응급실은 응급실을 운영하는 종합병원·병원입니다.' : '지도와 가까운 병원·약국 목록은 애보사 앱 주소에서 이 화면 안에 보여 드립니다.',
     '자주 가는 곳이 지금 열었는지는 직접 적은 시간으로 계산합니다. 공휴일·임시 휴진은 반영하지 못하니, 가기 전에 전화로 확인하세요.',
     '예방접종: 질병관리청 표준 예방접종 일정표(2026년 기준, 동대문구 보건소 페이지 2026-01-05 수정). 실제 접종 기록은 예방접종도우미(nip.kdca.go.kr)에서 볼 수 있습니다.',
     '카카오맵 검색 링크는 2026-10-23에 열어 확인했습니다. 네이버 지도 링크는 이 샘플을 만든 환경에서 열어 보지 못했습니다.',
@@ -1907,6 +1900,13 @@ $('#viewClinic').addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.ckind) { near.kind = t.dataset.ckind; keepFocus(() => renderNearList(true)); return; }
   if (t.dataset.copen) { near.openOnly = !near.openOnly; keepFocus(() => renderNearList(true)); return; }
+  if (t.dataset.ccond) { const k = t.dataset.ccond; if (near.conds.has(k)) near.conds.delete(k); else near.conds.add(k); keepFocus(() => renderNearList(true)); return; }
+  if (t.dataset.cfocus) {
+    const pl = near.places.find(x => x.id === t.dataset.cfocus);
+    if (pl && near.map && window.kakao) { near.map.setLevel(3); near.map.panTo(new kakao.maps.LatLng(pl.y, pl.x)); $('#cMap').scrollIntoView({ block: 'center', behavior: 'smooth' }); say(`지도에서 ${pl.n} 쪽으로 옮겼어요.`); }
+    else say('지도를 불러오지 못해 옮기지 못했어요.');
+    return;
+  }
   if (t.dataset.cdel) removeWithUndo(clinics, 'clinics', t.dataset.cdel, renderClinicNow, '자주 가는 곳에서 지웠어요.');
   else if (t.dataset.vax) {
     const id = t.dataset.vax;
@@ -1951,9 +1951,22 @@ const distText = km => (km < 1 ? `${Math.max(10, Math.round(km * 100) * 10)}m` :
 // 길찾기만 카카오맵으로 넘긴다(이름, 위도, 경도 순서)
 const kakaoRoute = p => `https://map.kakao.com/link/to/${encodeURIComponent(p.n)},${p.y},${p.x}`;
 // [고르기 칩 이름, 문장에 쓰는 이름, 고르는 조건]. 소아청소년과 진료 = 진료과목에 소아청소년과가 있는 곳(내과·이비인후과 의원 포함)
-const NEAR_KINDS = { peds: ['소아청소년과 진료', '소아청소년과 진료 기관', p => p.k === 'c' || p.k === 'h' || p.k === 'b'], pharm: ['약국', '약국', p => p.k === 'p'], moon: ['달빛·소아전문', '달빛어린이병원·소아전문센터', p => !!p.m] };
+const NEAR_KINDS = { peds: ['소아청소년과 진료', '소아청소년과 진료 기관', p => !!p.pd], pharm: ['약국', '약국', p => p.k === 'p'], moon: ['달빛·소아전문', '달빛어린이병원·소아전문센터', p => !!p.m], er: ['응급실', '응급실', p => !!p.er] };
+// 진료 시간 조건(여러 개 고를 수 있음). 시간은 국립중앙의료원 요일별 진료 시간(월~일, 공휴일)
+const lateOn = s => !!s && (s[1] >= 1200 || s[1] < s[0]);
+const NEAR_CONDS = {
+  night: ['밤 8시 이후 진료', p => p.h.slice(0, 5).some(x => lateOn(spanOf(x)))],
+  sat: ['토요일 진료', p => !!spanOf(p.h[5])],
+  sun: ['일요일·공휴일 진료', p => !!spanOf(p.h[6]) || !!spanOf(p.h[7])]
+};
+const HRS_DAYS = ['월', '화', '수', '목', '금', '토', '일', '공휴일'];
+function hoursTable(p, now) {
+  const today = dayCode(now) - 1;
+  return `<table class="hrs"><tbody>${HRS_DAYS.map((d, i) => { const t = spanOf(p.h[i]);
+    return `<tr${i === today ? ' class="today"' : ''}><th scope="row">${d}${i === today ? '(오늘)' : ''}</th><td>${t ? `${hhmm(t[0])}~${t[1] < t[0] ? '다음 날 ' : ''}${hhmm(t[1] % 1440 || (t[1] ? 1440 : 0))}` : '쉬어요'}</td></tr>`; }).join('')}</tbody></table>`;
+}
 const kindName = p => p.k === 'c' ? (p.ps ? '소아청소년과 의원' : '의원(소아청소년과 진료)') : p.k === 'h' ? (p.ps ? '소아청소년과 병원' : '병원(소아청소년과 진료)') : p.k === 'b' ? '보건소' : p.k === 'p' ? '약국' : '';
-const near = { pos: null, places: [], kind: null, openOnly: true, map: null, marks: [], meta: null };
+const near = { pos: null, posName: '내 위치', places: [], kind: null, openOnly: true, conds: new Set(), map: null, marks: [], meta: null };
 // 내 위치가 든 0.1도 격자 칸과 둘레 8칸(약 9km 안)의 자료만 받는다. 위치는 서버로 보내지 않는다
 async function loadNear(pos) {
   const cy = Math.floor(pos.y * 10), cx = Math.floor(pos.x * 10), keys = [];
@@ -1969,7 +1982,7 @@ function loadKakao() {
   if (!kakaoReady) {
     kakaoReady = new Promise((ok, no) => {
       const s = document.createElement('script');
-      s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(SITE.mapKey)}&autoload=false`;
+      s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(SITE.mapKey)}&autoload=false&libraries=services`;
       s.onload = () => (window.kakao && kakao.maps ? kakao.maps.load(ok) : no(new Error('sdk')));
       s.onerror = () => no(new Error('sdk'));
       document.head.appendChild(s);
@@ -1990,7 +2003,7 @@ function drawMap(rows) {
       el.className = 'pin ' + cls; el.textContent = label; el.setAttribute('aria-label', aria);
       return new K.CustomOverlay({ position: pos, content: el, yAnchor: 1.2 });
     };
-    near.marks = [pin('me', '내 위치', '내 위치', me), ...rows.map((r, i) => pin(r.st.open ? 'ok' : '', String(i + 1), `${i + 1}번 ${r.p.n}`, new K.LatLng(r.p.y, r.p.x), () => focusNear(r.p.id)))];
+    near.marks = [pin('me', near.posName === '내 위치' ? '내 위치' : '찾은 곳', near.posName, me), ...rows.map((r, i) => pin(r.st.open ? 'ok' : '', String(i + 1), `${i + 1}번 ${r.p.n}`, new K.LatLng(r.p.y, r.p.x), () => focusNear(r.p.id)))];
     near.marks.forEach(m => m.setMap(near.map));
     const b = new K.LatLngBounds();
     b.extend(me); rows.slice(0, 10).forEach(r => b.extend(new K.LatLng(r.p.y, r.p.x)));
@@ -2005,45 +2018,67 @@ function focusNear(id) { const li = document.getElementById('np-' + id); if (li)
 // withMap: 종류·조건을 바꿨을 때만 지도를 다시 그린다(1분마다는 목록의 열림 상태만)
 function renderNearList(withMap) {
   if (!near.pos) return;
-  const now = new Date(), [, label, want] = NEAR_KINDS[near.kind];
-  const hasMoon = near.places.some(p => p.m);
-  $('#cKinds').innerHTML = Object.entries(NEAR_KINDS).filter(([k]) => k !== 'moon' || hasMoon)
+  const now = new Date(), [, label, want] = NEAR_KINDS[near.kind], isEr = near.kind === 'er';
+  const hasMoon = near.places.some(p => p.m), hasEr = near.places.some(p => p.er);
+  $('#cKinds').innerHTML = Object.entries(NEAR_KINDS).filter(([k]) => (k !== 'moon' || hasMoon) && (k !== 'er' || hasEr))
     .map(([k, [n]]) => `<button type="button" class="chipbtn" data-ckind="${k}" aria-pressed="${near.kind === k}">${n}</button>`).join('') +
-    `<button type="button" class="chipbtn" data-copen="1" data-multi aria-pressed="${near.openOnly}">지금 열린 곳만</button>`;
-  const all = near.places.filter(want).map(p => ({ p, d: distKm(near.pos, p), st: placeState(p, now) })).sort((a, b) => a.d - b.d);
+    (isEr ? '' : `<button type="button" class="chipbtn" data-copen="1" data-multi aria-pressed="${near.openOnly}">지금 열린 곳만</button>` +
+      Object.entries(NEAR_CONDS).map(([k, [n]]) => `<button type="button" class="chipbtn" data-ccond="${k}" data-multi aria-pressed="${near.conds.has(k)}">${n}</button>`).join(''));
+  const stOf = p => (isEr ? { open: true, key: 'ok', text: '응급실 운영' } : placeState(p, now));
+  const all = near.places.filter(want).filter(p => isEr || [...near.conds].every(k => NEAR_CONDS[k][1](p)))
+    .map(p => ({ p, d: distKm(near.pos, p), st: stOf(p) })).sort((a, b) => a.d - b.d);
   // 소아청소년과 진료: 이름에 '소아'가 들어간 곳을 가까운 순으로 먼저, 진료과목에만 소아청소년과가 있는 곳은 그 아래(2026-10-23 결정)
   if (near.kind === 'peds') all.sort((a, b) => (b.p.ps ? 1 : 0) - (a.p.ps ? 1 : 0));
-  const rows = (near.openOnly ? all.filter(r => r.st.open) : all).slice(0, 20);
+  const rows = (near.openOnly && !isEr ? all.filter(r => r.st.open) : all).slice(0, 20);
   const grp = (r, i) => near.kind !== 'peds' || (i > 0 && !!rows[i - 1].p.ps === !!r.p.ps) ? ''
     : `<li class="grp" aria-hidden="true">${r.p.ps ? "이름에 '소아'가 들어간 소아청소년과" : '진료과목에 소아청소년과가 있는 곳'}</li>`;
+  const extra = p => [kindName(p) || (p.er ? '병원' : ''), p.m ? '달빛어린이병원·소아전문센터 목록' : '', isEr && p.ec ? p.ec : ''].filter(Boolean).join(' · ');
   $('#cNearList').innerHTML = rows.length ? rows.map((r, i) => `${grp(r, i)}<li id="np-${esc(r.p.id)}" tabindex="-1"><div class="drow"><b>${i + 1}. ${esc(r.p.n)}</b><span class="unit">${distText(r.d)}</span></div>
-    <span class="meta"><span class="st ${r.st.key}">${esc(r.st.text)}</span>${esc(kindName(r.p))}${r.p.m ? ' · 달빛어린이병원·소아전문센터 목록' : ''}</span>
+    <span class="meta"><span class="st ${r.st.key}">${esc(r.st.text)}</span>${esc(extra(r.p))}</span>
     ${r.p.a ? `<span class="meta">${esc(r.p.a)}</span>` : ''}
-    <span class="acts">${r.p.t ? `<a href="tel:${esc(r.p.t.replace(/[^0-9+]/g, ''))}">${esc(r.p.t)}</a>` : '<span></span>'}<a class="chipbtn go" href="${esc(kakaoRoute(r.p))}" target="_blank" rel="noopener">길찾기${EXT}</a></span></li>`).join('')
-    : `<li class="empty2">${all.length ? `가까운 ${label} ${all.length}곳 중 지금 연 곳이 없어요. '지금 열린 곳만'을 끄면 모두 볼 수 있어요.` : `가까운 ${label} 자료가 없어요. 아래 지도 앱·응급의료포털 링크로 찾아 주세요.`}</li>`;
+    <details class="more"><summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg>${isEr ? '외래 진료 시간 보기' : '요일별 진료 시간 보기'}</summary>${hoursTable(r.p, now)}</details>
+    <span class="acts">${r.p.t ? `<a href="tel:${esc(r.p.t.replace(/[^0-9+]/g, ''))}">${esc(r.p.t)}</a>` : '<span></span>'}<span class="btnrow"><button type="button" class="chipbtn" data-cfocus="${esc(r.p.id)}">지도에서 보기</button><a class="chipbtn go" href="${esc(kakaoRoute(r.p))}" target="_blank" rel="noopener">길찾기${EXT}</a></span></span></li>`).join('')
+    : `<li class="empty2">${all.length ? `가까운 ${label} ${all.length}곳 중 지금 연 곳이 없어요. '지금 열린 곳만'을 끄면 모두 볼 수 있어요.` : `${esc(near.posName)} 둘레 약 9km 안에 조건에 맞는 ${label}이 없어요. 조건을 끄거나 '동네로 찾기'로 다른 곳을 찾아보세요.`}</li>`;
   const m = near.meta;
-  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 소아청소년과 진료는 진료과목에 소아청소년과가 있는 곳이고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적고 먼저 보여 줍니다. 달빛어린이병원·소아전문센터는 국립중앙의료원 목록 기준입니다. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
+  $('#cNearSrc').textContent = `진료 시간: 국립중앙의료원 공공데이터${m && m.updatedText ? `(${m.updatedText} 받음)` : ''}. 응급실은 응급실을 운영하는 종합병원·병원이며, 소아 진료가 되는지는 가기 전에 전화로 확인하세요. 소아청소년과 진료는 진료과목에 소아청소년과가 있는 곳이고, 이름에 '소아'가 들어간 곳만 '소아청소년과 의원'으로 적고 먼저 보여 줍니다. 달빛어린이병원·소아전문센터는 국립중앙의료원 목록 기준입니다. 내 위치 둘레 약 9km 안에서 가까운 순서로 20곳까지 보여 줍니다. 공휴일 진료 시간이 없는 곳은 쉬는 것으로 봅니다. 임시 휴진은 반영하지 못하니 가기 전에 전화로 확인하세요.`;
   if (withMap) drawMap(rows);
+}
+// 내 위치 또는 동네·역 이름으로 찾은 좌표에서 가까운 곳을 보여 준다
+async function showNearAt(pos, name) {
+  near.pos = pos; near.posName = name;
+  near.places = await loadNear(pos);
+  // 처음 고를 종류: 평일 낮에는 소아청소년과 진료, 밤·휴일에는 달빛·소아전문(자료에 있으면) 아니면 약국
+  if (!near.kind) near.kind = isDaytime(new Date()) && !HOLIDAYS.has(isoOf(new Date())) ? 'peds' : near.places.some(x => x.m) ? 'moon' : 'pharm';
+  $('#cNearUi').hidden = false;
+  renderNearList(true);
+  say(`${name === '내 위치' ? '' : name + ' 둘레에서 '}가까운 ${josa(NEAR_KINDS[near.kind][1], '을', '를')} 찾았어요.`);
 }
 $('#cLocate').addEventListener('click', () => {
   const btn = $('#cLocate'), label = $('#cLocateT');
-  if (!navigator.geolocation) { $('#cLocHint').textContent = '이 브라우저에서는 위치를 쓸 수 없어요. 아래 지도 앱 링크로 찾아 주세요.'; return; }
+  if (!navigator.geolocation) { $('#cLocHint').textContent = "이 브라우저에서는 위치를 쓸 수 없어요. '동네로 찾기'에 동네나 역 이름을 넣어 주세요."; return; }
   btn.disabled = true; label.textContent = '위치 확인 중';
   navigator.geolocation.getCurrentPosition(async p => {
     try {
-      near.pos = { y: p.coords.latitude, x: p.coords.longitude };
       label.textContent = '가까운 곳 찾는 중';
-      near.places = await loadNear(near.pos);
-      // 처음 고를 종류: 평일 낮에는 소아청소년과, 밤·휴일에는 달빛어린이병원(자료에 있으면) 아니면 약국
-      if (!near.kind) near.kind = isDaytime(new Date()) && !HOLIDAYS.has(isoOf(new Date())) ? 'peds' : near.places.some(x => x.m) ? 'moon' : 'pharm';
-      $('#cNearUi').hidden = false;
-      renderNearList(true);
-      say(`가까운 ${josa(NEAR_KINDS[near.kind][1], '을', '를')} 찾았어요.`);
+      await showNearAt({ y: p.coords.latitude, x: p.coords.longitude }, '내 위치');
     } finally { btn.disabled = false; label.textContent = '내 위치 다시 확인'; }
   }, err => {
     btn.disabled = false; label.textContent = '내 위치로 가까운 곳 보기';
-    $('#cLocHint').textContent = err.code === 1 ? '위치 사용을 허용하지 않아 가까운 곳을 찾지 못했어요. 아래 지도 앱·응급의료포털 링크로 찾을 수 있어요.' : '위치를 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+    $('#cLocHint').textContent = err.code === 1 ? "위치 사용을 허용하지 않아 내 위치로는 찾지 못했어요. '동네로 찾기'에 동네나 역 이름을 넣어 주세요." : '위치를 확인하지 못했어요. 잠시 뒤 다시 누르거나 동네 이름으로 찾아 주세요.';
   }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+});
+// 동네·역 이름 → 좌표: 카카오 지도 SDK의 장소 검색(앱 안에서 처리, 바깥으로 나가지 않는다)
+$('#cPlaceForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#cPlace').value.trim();
+  if (!q) { $('#cLocHint').textContent = '동네나 역 이름을 적어 주세요.'; $('#cPlace').focus(); return; }
+  $('#cLocHint').textContent = `${josa(`'${q}`, "'을", "'를")} 찾는 중이에요.`;
+  loadKakao().then(() => new kakao.maps.services.Places().keywordSearch(q, async (data, status) => {
+    if (status !== kakao.maps.services.Status.OK || !data.length) { $('#cLocHint').textContent = `${josa(`'${q}`, "'을", "'를")} 찾지 못했어요. 동 이름이나 역 이름으로 다시 적어 주세요.`; return; }
+    const top = data[0];
+    $('#cLocHint').textContent = `${top.place_name}(${top.road_address_name || top.address_name}) 둘레를 보여 드려요.`;
+    await showNearAt({ y: Number(top.y), x: Number(top.x) }, top.place_name);
+  })).catch(() => { $('#cLocHint').textContent = '지금은 동네 이름으로 찾을 수 없어요. 내 위치로 찾아 주세요.'; });
 });
 
 /* ---------- 핫딜: 지금 가격(상품 링크) → 몰에서 직접 찾기 → 내가 본 가격 ---------- */
