@@ -2,7 +2,7 @@
 # 필요한 저장소 비밀 값(Settings → Secrets and variables → Actions):
 #   DATA_GO_KR_KEY  공공데이터포털 일반 인증키(Decoding) — 국립중앙의료원 병·의원 찾기·약국 정보 활용신청 후
 #   KAKAO_JS_KEY    카카오 개발자 앱의 JavaScript 키 — 카카오맵 사용 설정 ON, JavaScript SDK 도메인에 Pages 주소 등록 후
-# 자료 받기가 실패하면, 이미 배포된 자료가 있을 때는 배포하지 않아 직전 판이 남고, 없을 때는 자료 없이 앱만 배포한다.
+# 자료 받기가 실패하면, 이미 배포된 자료가 있을 때는 그 자료를 그대로 다시 받아 앱을 배포하고(다시 받기도 실패하면 배포하지 않아 직전 판이 남는다), 없을 때는 자료 없이 앱만 배포한다.
 name: 애보사 배포
 on:
   push:
@@ -38,10 +38,16 @@ jobs:
             echo "::warning::DATA_GO_KR_KEY가 없어 병원·약국 자료 없이 배포합니다"
           elif ! python3 -I -B fetch_clinics.py; then
             if curl -sf -o /dev/null "$LIVE_META"; then
-              echo "::error::병원·약국 자료 받기에 실패해 배포하지 않습니다. 직전에 배포된 판과 자료가 그대로 남습니다"
-              exit 1
+              # 배포된 자료가 있으면 그대로 다시 써서 앱은 배포한다(자료 칸 목록이 없으면 배포를 멈춘다)
+              if python3 -I -B mirror_clinics.py "${LIVE_META%meta.json}"; then
+                echo "::warning::병원·약국 자료 받기에 실패해 배포된 자료를 그대로 다시 씁니다"
+              else
+                echo "::error::병원·약국 자료 받기에 실패했고 배포된 자료도 다시 쓸 수 없어 배포하지 않습니다"
+                exit 1
+              fi
+            else
+              echo "::warning::병원·약국 자료 받기에 실패했고 배포된 자료도 없어, 자료 없이 앱만 배포합니다"
             fi
-            echo "::warning::병원·약국 자료 받기에 실패했고 배포된 자료도 없어, 자료 없이 앱만 배포합니다"
           fi
       - uses: actions/upload-pages-artifact@v3
         with:

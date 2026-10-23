@@ -212,7 +212,7 @@ def main():
     counts['er'] = sum(bool(r.get('er')) for r in rows.values())
     meta = {'updatedAt': now.isoformat(timespec='minutes'), 'updatedText': f'{now.month}월 {now.day}일 {now:%H:%M}',
             'source': '국립중앙의료원 전국 병·의원 찾기 서비스·전국 약국 정보 조회 서비스(공공데이터포털)',
-            'cell': 0.1, 'cells': len(cells), 'counts': counts, 'moonList': moon_ok, 'erList': er_ok}
+            'cell': 0.1, 'cells': len(cells), 'cellList': sorted(cells), 'counts': counts, 'moonList': moon_ok, 'erList': er_ok}
     (OUT / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False), encoding='utf-8')
     print(f'칸 {len(cells)}개 · 소아청소년과 진료 의원 {counts["c"]} · 병원 {counts["h"]} · 보건소 {counts["b"]} · 이름에 소아 {counts["ps"]}'
           f' · 약국 {counts["p"]} · 달빛어린이병원·소아전문센터 {counts["m"]} · 응급실 {counts["er"]}')
