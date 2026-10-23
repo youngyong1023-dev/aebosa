@@ -2073,11 +2073,20 @@ $('#cPlaceForm').addEventListener('submit', e => {
   const q = $('#cPlace').value.trim();
   if (!q) { $('#cLocHint').textContent = '동네나 역 이름을 적어 주세요.'; $('#cPlace').focus(); return; }
   $('#cLocHint').textContent = `${josa(`'${q}`, "'을", "'를")} 찾는 중이에요.`;
-  loadKakao().then(() => new kakao.maps.services.Places().keywordSearch(q, async (data, status) => {
-    if (status !== kakao.maps.services.Status.OK || !data.length) { $('#cLocHint').textContent = `${josa(`'${q}`, "'을", "'를")} 찾지 못했어요. 동 이름이나 역 이름으로 다시 적어 주세요.`; return; }
-    const top = data[0];
-    $('#cLocHint').textContent = `${top.place_name}(${top.road_address_name || top.address_name}) 둘레를 보여 드려요.`;
-    await showNearAt({ y: Number(top.y), x: Number(top.x) }, top.place_name);
+  // 동·주소는 주소 검색을 먼저, 없으면 장소(역·건물) 검색
+  loadKakao().then(() => new kakao.maps.services.Geocoder().addressSearch(q, async (addr, st) => {
+    const S = kakao.maps.services.Status;
+    if (st === S.OK && addr.length) {
+      $('#cLocHint').textContent = `${addr[0].address_name} 둘레를 보여 드려요.`;
+      await showNearAt({ y: Number(addr[0].y), x: Number(addr[0].x) }, q);
+      return;
+    }
+    new kakao.maps.services.Places().keywordSearch(q, async (data, status) => {
+      if (status !== S.OK || !data.length) { $('#cLocHint').textContent = `${josa(`'${q}`, "'을", "'를")} 찾지 못했어요. 동 이름이나 역 이름으로 다시 적어 주세요.`; return; }
+      const top = data[0];
+      $('#cLocHint').textContent = `${top.place_name}(${top.road_address_name || top.address_name}) 둘레를 보여 드려요.`;
+      await showNearAt({ y: Number(top.y), x: Number(top.x) }, top.place_name);
+    });
   })).catch(() => { $('#cLocHint').textContent = '지금은 동네 이름으로 찾을 수 없어요. 내 위치로 찾아 주세요.'; });
 });
 
