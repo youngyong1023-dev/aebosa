@@ -5,6 +5,7 @@
 - 모음(comp): 제목에 모음 표시가 있거나 30분 이상.
 """
 import re
+import unicodedata
 
 def secs(s):
     t = 0
@@ -138,6 +139,39 @@ def lang_check(t, lang):
     latin, hangul = len(re.findall(r'[A-Za-z]', body)), len(re.findall(r'[가-힣]', body))
     mostly_latin = latin and (hangul == 0 or latin > hangul * 1.5)
     return not (re.search(EN_STRONG, te, re.I) or mostly_latin)
+
+# 한국어·영어가 아닌 언어 판(2026-10-23 결정: 앱에 넣지 않는다). 공식 채널이 중국어·일본어·스페인어·인도네시아어 판 등을 함께 올린다.
+# 제목에 한글이 있으면 한국어 영상으로 본다(슈퍼윙스 '인도네시아 편', 주니토니 '중국어 숫자송'처럼 한국어로 진행하는 영상).
+# 단, 제목 맨 앞에 [CN]·[VN] 같은 언어 표시가 붙은 영상은 한글이 있어도 그 언어 판이다.
+OTHER_TAG = re.compile(r'^\s*[\[(](?:CN|ZH|TW|JP|JA|VN|VI|TH|ID|MY|PH|ES|PT|BR|FR|DE|IT|RU|LAT)[\])]')  # [AR]은 증강현실(AR) 영상이라 넣지 않는다
+OTHER_SCRIPT = re.compile('[฀-๿ぁ-ヺー؀-ۿЀ-ӿऀ-ॿẠ-ỹĐđƠơƯư]'
+                          '|[一-鿿]{2,}')  # 태국·일본 가나(가운뎃점 ・ 제외)·아랍·키릴·데바나가리·베트남 문자, 한자 두 자 이상
+OTHER_DIACRITIC = re.compile(r'[À-ÖØ-öø-ÿĀ-ſ]')  # ñ·ç·ã·é처럼 영어에 거의 없는 라틴 글자
+EN_LOANWORD = re.compile(r'pi[ñn]ata|caf[ée]|pok[ée]mon|na[ïi]ve|cr[èe]me|jalape[ñn]o|r[ée]sum[ée]|d[ée]j[àa]', re.I)
+OTHER_WORD = re.compile(r'(?<![A-Za-z])(?:Bahasa|Indonesia|Indonesian|Espa[ñn]ol|Spanish|Portugu[êe]s|Portuguese|Fran[çc]ais|French|Deutsch|German|Italiano|Italian'
+                        r'|Melayu|Malay|Tagalog|Filipino|T[üu]rk[çc]e|Turkish|Vietnamese|Japanese|Chinese|Mandarin|Cantonese|Russian|Arabic|Hindi|Polski|Nederlands'
+                        r'|Multi-?language|canciones|infantiles|minutos|compilaci[óo]n|compila[çc][ãa]o|enfants|comptines|avec|ni[ñn]os|crian[çc]as|m[úu]sicas|desenhos?|dibujos'
+                        r'|Kinderlieder|chansons?|liedjes|kinderen|canzon[ei]|bambini|bernyanyi|menari|bersama|lagu|anak|dengan|untuk|cuci|tangan|langkah|sumayaw|kasama|kumanta|paghuhugas|mga|kanta|awitin|pambata)(?![A-Za-z])', re.I)
+EN_CONTEXT = re.compile(r'Chinese New Year|Lunar New Year|Mandarin Ducks?|Chinese Orchestra', re.I)  # 영어 영상인데 위 낱말이 들어간 경우
+
+
+def other_lang(t):
+    """한국어·영어가 아닌 언어 판이면 그 근거('언어 표시'·'문자'·'라틴 특수 글자'·'언어 이름·낱말'), 아니면 None."""
+    t = unicodedata.normalize('NFC', t)  # 'Hoàng'처럼 글자와 성조 표시가 나뉘어 들어온 제목도 한 글자로 합쳐 본다
+    if OTHER_TAG.search(t):
+        return '언어 표시'
+    if re.search(r'[가-힣]', t):
+        return None
+    if OTHER_SCRIPT.search(t):
+        return '문자'
+    if OTHER_DIACRITIC.search(EN_LOANWORD.sub('', t)):
+        return '라틴 특수 글자'
+    if re.search(r'in English', t, re.I):  # 'Spanish Nursery Rhymes in English'처럼 영어로 부른 판
+        return None
+    if OTHER_WORD.search(EN_CONTEXT.sub('', t)):
+        return '언어 이름·낱말'
+    return None
+
 
 AGE_TEXT = r'\d+\s*[-~]\s*\d+\s*세|\d+\s*살\s*수준|\d+\s*-\s*\d+\s*Years|Toddlers?\b|Preschoolers?\b|유치원|초등\s*입학\s*준비|초등입학준비'
 LEVEL = r'리틀팍스\s*\d\s*단계|영어 듣기 훈련\s*\d\s*단계'

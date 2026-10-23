@@ -3253,32 +3253,6 @@
 "query": "YouTube Data API 채널 업로드"
 },
 {
-"id": "oevHysasp4s",
-"title": "Banana Cha Cha | Bahasa Indonesia | Bernyanyi dan Menari Bersama lagu Pororo's Banana!",
-"label": "Banana Cha Cha",
-"channel": "Pororo the Little Penguin",
-"work": "뽀로로",
-"chClass": "작품 공식",
-"sec": 149,
-"len": "5분 미만",
-"comp": false,
-"season": null,
-"ep": null,
-"format": "본편·이야기",
-"lang": "영어",
-"sub": "",
-"audioOnly": false,
-"level": "",
-"ageText": "",
-"situ": [],
-"learn": [],
-"theme": [
-"먹기"
-],
-"scary": false,
-"query": "YouTube Data API 채널 업로드"
-},
-{
 "id": "yuCxcq8wXT4",
 "title": "Pororo Movie - Pororo Heroes 2 l The Attack of Dinosaurs l Full Movie l Show for Kids",
 "label": "Pororo Movie - Pororo Heroes 2",
@@ -14958,30 +14932,6 @@
 "theme": [
 "탈것"
 ],
-"scary": false,
-"query": "YouTube Data API 채널 업로드"
-},
-{
-"id": "9A-ym__RfqM",
-"title": "โรโบคาร์ โพลิ เดินทางปลอดภัยกับโพลิ | #08.ตอน เล่นลูกบอลให้ปลอดภัย",
-"label": "โรโบคาร์ โพลิ เดินทางปลอดภัยกับโพลิ",
-"channel": "Robocar POLI TV",
-"work": "로보카폴리",
-"chClass": "작품 공식",
-"sec": 313,
-"len": "5~30분",
-"comp": false,
-"season": null,
-"ep": 8,
-"format": "본편·이야기",
-"lang": "한국어",
-"sub": "",
-"audioOnly": false,
-"level": "",
-"ageText": "",
-"situ": [],
-"learn": [],
-"theme": [],
 "scary": false,
 "query": "YouTube Data API 채널 업로드"
 },

@@ -7,7 +7,8 @@
 2. 채널마다 업로드 목록 전체를 받는다(channels.list → playlistItems.list, 50편에 1단위).
 3. 영상마다 길이·설명·조회수를 받는다(videos.list). 60초 이하(쇼츠)와 라이브·예정 영상은 뺀다.
 4. catalog_rules.classify로 작품·형식(본편·동요 등)·모음을 정한다. 한 채널에 여러 작품이 올라오는 채널(EBS 키즈 등)은
-   제목으로 작품이 정해지는 영상만 남긴다.
+   제목으로 작품이 정해지는 영상만 남긴다. 한국어·영어가 아닌 언어 판(중국어·일본어·스페인어·인도네시아어 등)은
+   catalog_rules.other_lang으로 가려 뺀다(2026-10-23 결정).
 5. 설명란의 챕터(0:00부터 시작하는 시각 3개 이상)를 구간으로 붙인다: 'ch': [[시작 초, 구간 이름], ...].
 6. 공식 채널이 아닌 영상(유아 채널·수면 음악 등)은 지금 목록 그대로 둔다.
 7. 결과(2026-10-23 결정): 작품별 전체 목록은 data/works/(작품마다 파일 하나, 자체 주소 판이 작품 화면을 열 때 불러옴),
@@ -186,13 +187,16 @@ def main():
     (CACHE / f'uploads_{day}.json').write_text(json.dumps(raw, ensure_ascii=False), encoding='utf-8')
 
     # 4) 분류
-    new, skipped = {}, {'쇼츠': 0, '라이브·예정': 0, '다른 작품(같은 채널)': 0}
+    new, skipped = {}, {'쇼츠': 0, '라이브·예정': 0, '다른 작품(같은 채널)': 0, '다른 언어': 0}
     for vid, r in raw.items():
         if r['live'] != 'none':
             skipped['라이브·예정'] += 1
             continue
         if r['sec'] < MIN_SEC:
             skipped['쇼츠'] += 1
+            continue
+        if R.other_lang(r['title']):
+            skipped['다른 언어'] += 1
             continue
         item = R.classify(vid, r['title'], r['channel'], r['sec'], 'YouTube Data API 채널 업로드')
         if item['chClass'] != '작품 공식':
@@ -206,7 +210,7 @@ def main():
         if ch:
             item['ch'] = ch
         new[vid] = item
-    keep = [v for v in old if v['chClass'] != '작품 공식' and v['id'] not in new]
+    keep = [v for v in old if v['chClass'] != '작품 공식' and v['id'] not in new and not R.other_lang(v['title'])]
     by_work = collections.defaultdict(list)
     for v in new.values():
         by_work[v['work']].append(v)
